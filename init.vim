@@ -138,28 +138,29 @@ EOF
 " VimCommentary:
 
 " VOoM:
-" :Voom[Toggle] <arg>
-" - without an <arg> it'll lookup &filetype in g:voom_ft_modes. If it finds
-"   a markupmode voom imports voom_vimplugin2657.voom_mode_<markupmode>.py
-"   If it doesn't find a markupmode, it'll use g:voom_default_mode as its
-"   markupmode (usually fmr, unless you set it yourself) and import its module.
-" - with an <arg> it'll import voom_vimplugin2657.voom_mode_<arg>.py
-" - there are ~27 markupmodes available in Voom's repo, which you can complete
-"   when doing :Voom <tab>.  Your own modes (eg in ../pylib/voom_vimplugin2657
-"   won't be tab-completed.
-" - Unfortunately, the filetype->markupmode dict g:voom_ft_modes is empty and
-"   you need to fill it yourself...
+" - :Voom mmode will import voom_mode_<mmode>.py from voom_vimplugin2657
+"   package which creates the outline in Voom's treebuffer.
+" - :Voom (no mmode aka markupmode) will lookup the mmode using the filetype
+"   as key into the dict g:voom_ft_modes, which is empty by default (you have
+"   to fill it yourself, mapping filetypes to desired markupmodes).
+" - ./pylib subdir (also) contains a voom_vimplugin2657 subdir and it's
+"   __init__.py turns voom_vimplugin2657 into a namespace, so private
+"   markupmodes (voom_mode_<mymode>.py) in that dir are available to Voom.
+" - if g:voom_ft_modes[&filetype] comes up empty, Voom uses g:voom_mode_default
+"   as its default markupmode (usually fmr, unless you change it here).
 " So:
-" - search available markupmodes by globbing for voom_mode_<markupmode>.py
-"   files bu globbing for voom_mode_<mmode>.py files under $VIMDIR/repos and
-"   $VIMDIR/pylib (both of which are specific to my setup).
-" - using python to search voom_vimplugin2657's namespace will only find our
-"   user/private module since voom is not on sys.path (yet).
-" TODO
+" - we fill g:voom_ft_modes by scouring Voom's namespace and our own additions
+"   by globbing for voom_mode_<mmode>.py files and adding mmode -> mmode
+"   mappings to g:voom_ft_modes. Following this, we override some of the
+"   automatic settings (rst -> wiki) or add aliases (cfg -> confg)
+" - NB: using python to search voom_vimplugin2657's namespace will only find
+"   our user/private module since voom's package is not on sys.path (yet).
+" TODO:
 " o add  a Voom outline mode for HLP files (eg for pydoc csv)
 "
 " Note: g:VIMDIR needs to be set inside init.vim, NOT inside the function!
 " See https://superuser.com/questions/119991/how-do-i-get-vim-home-directory
+" We'll pick up any voom_mode_<mmode>.py under repos, of any plugin therein.
 let g:VIMDIR = expand('<sfile>:p:h')  " this scripts directory
 function! MyVoomFiletypes() abort
   let repos = globpath(g:VIMDIR, '/repos/**/voom_mode_*.py', 0, 1)
@@ -169,7 +170,7 @@ function! MyVoomFiletypes() abort
   call map(pylib, {k,v -> fnamemodify(v,':t')})
   call map(pylib, {k,v -> split(v, '[._]')[2]})
   let ft2modes = {}
-  " make sure pylib comes last -> overrides repos/ markupmodes (if applicable)
+  " make sure private pylib comes last so it overrides any repos/markupmodes
   for mode in extend(repos, pylib)
     let ft2modes[mode] = mode
   endfor
@@ -190,6 +191,7 @@ for [k,v] in items({
   let g:voom_ft_modes[k] = v
 endfor
 
+" with g:voom_ft_modes properly filled, we can now do simple :Voom[Toggle]
 nnoremap <silent> <space>v :VoomToggle<cr>
 " JK move down/up w/ select by (re)mapping onto <down>/<up>
 au FileType voomtree nmap <silent><buffer>J <down>
