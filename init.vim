@@ -48,19 +48,21 @@ call dein#add('Shougo/deoplete.nvim')
 call dein#add('ervandew/supertab')
 call dein#add('SirVer/ultisnips')
 call dein#add('honza/vim-snippets')
+call dein#add('autozimu/LanguageClient-neovim', {
+      \'rev': 'next',
+      \'do': 'bash install.sh'
+      \})
 
 let js_opts = {'on_ft': ['javascript', 'javascript.jsx']}
-call dein#add('carlitux/deoplete-ternjs', js_opts)
 call dein#add('othree/jspc.vim', js_opts)
 let js_opts = {
       \'on_ft': ['javascript', 'javascript.jsx'],
       \'build': 'npm install'}
-call dein#add('ternjs/tern_for_vim', js_opts)
 
 " deoplete-jedi = deoplete source for jedi
 " pip3 install neovim
 " pip3 install pynvim
-call dein#add('zchee/deoplete-jedi')  " python
+call dein#add('zchee/deoplete-jedi', {'do': ':UpdateRemotePlugins'}) " python
 
 " jedi     -> https://github.com/davidhalter/jedi
 " jedi-vim -> https://github.com/davidhalter/jedi-vim
@@ -225,7 +227,7 @@ nnoremap <space><F8> :call dein#recache_runtimepath()<cr>
 " let g:neomake_logfile = expand('~/log/neomake.log')
 " let g:neomake_verbose = 3
 
-let g:neomake_open_list = 0                        " use <space>l to open loc
+let g:neomake_open_list = 1                        " use :lw or :cw to open
 let g:neomake_list_height = 20                     " lines in location window
 " default makers for <filetypes>
 let g:neomake_javascript_enabled_makers = ['eslint']
@@ -325,6 +327,30 @@ augroup end
 autocmd FileType javascript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
 let g:SuperTabClosePreviewOnPopupClose = 1
 
+" LanguageClient:
+" for denite users, some sources are available:
+" - codeAction      list ?
+" - contextMenu     list menu entries
+" - documentSymbol  list of symbols to goto
+" - references      list of references
+" - workspaceSymbol list of project symbols
+let g:LanguageClient_autoStart = 1
+let g:LanguageClient_serverCommands = {
+      \'javascript': ['javascript-typescript-stdio'],
+      \'javascript.jsx': ['javascript-typescript-stdio'],
+      \'typescript': ['javascript-typescript-stdio']
+      \}
+
+nnoremap <silent> ,h :call LanguageClient#textDocument_hover()<cr>
+nnoremap <silent> ,d :call LanguageClient#textDocument_definition()<cr>
+nnoremap <silent> ,i :call LanguageClient#textDocument_implementation()<cr>
+nnoremap <silent> ,F :call LanguageClient#textDocument_formatting()<cr>
+nnoremap <silent> ,s :Denite documentSymbol<cr>
+nnoremap <silent> ,S :Denite workspaceSymbol<cr>
+nnoremap <silent> ,r :Denite refecences<cr>
+
+
+
 " Deoplete:
 let g:deoplete#enable_at_startup=1
 let g:deoplete#auto_complete_delay=0
@@ -333,10 +359,10 @@ set completeopt+=menuone,noinsert,noselect
 inoremap <C-Space> <C-x><C-o>
 
 let g:deoplete#omni#functions = {
-      \'javascript': ['tern#Complete', 'jspc#omni']
+      \'javascript': ['LanguageClient#complete', 'jspc#omni']
       \}
 let g:deoplete#sources = {
-      \'javascript.jsx': ['file', 'ultisnips', 'ternjs']
+      \'javascript.jsx': ['file', 'ultisnips']
       \}
 
 let g:deoplete#file#enable_buffer_path=1
@@ -345,10 +371,6 @@ let g:deoplete#ignore_sources={'_': ['around', 'buffer']}
 " UltiSnips
 let g:UltiSnipsExpandTrigger="<c-j>"
 inoremap <esc><tab> pumvisible() ? "\<c-n>" : "\<tab>"
-
-" Tern:
-let g:tern#command = ['tern']
-let g:tern#arguments = ['--persistent']
 
 " EchoDoc:
 let g:echodoc_enable_at_startup=1
@@ -461,22 +483,6 @@ nnoremap <space>B :Denite -mode=normal buffer:!<cr>
 " Yats:
 " Vison:
 " JSPC:
-
-" Tern_for_Vim:
-" for ternjs you need to run `npm install` in tern_for_vim's dir
-"  after update/install of tern_for_vim
-let g:tern#command = ['node', expand("$HOME/.config/nvim/repos/github.com/ternjs/tern_for_vim/node_modules/tern/bin/tern"), '--no-port-file']
-let g:tern#arguments = ['--persistent']
-let g:tern_map_keys=1
-let g:tern_show_signature_in_pum=1
-
-nnoremap ,h :TernDoc<cr>           |" show help
-nnoremap ,b :TernDocBrowse<cr>     |" browse mozilla.org
-nnoremap ,t :TernType<cr>          |" show type of item under cursor
-nnoremap ,r :TernRefs<cr>          |" list refs to identifier
-nnoremap ,R :TernRename<cr>        |" rename a variable
-nnoremap ,p :TernDefPreview<cr>    |" show def of identifier in preview window
-
 
 " PYTHON: {{{2
 " pylint3 error output format string: see: https://docs.pylint.org/en/1.6.0/output.html
