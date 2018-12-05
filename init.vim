@@ -24,6 +24,7 @@ endif
 
 set runtimepath+=~/.config/nvim/repos/github.com/Shougo/dein.vim/
 call dein#begin(expand('~/.config/nvim'))
+" DEIN: {{{3
 call dein#add('Shougo/dein.vim')
 call dein#add('haya14busa/dein-command.vim')
 
@@ -32,114 +33,10 @@ call dein#add('haya14busa/dein-command.vim')
 call dein#add('tpope/vim-fugitive.git')      " for statusline
 call dein#add('tpope/vim-surround')          " change surrounds easily
 call dein#add('tpope/vim-commentary')        " gc to (un)comment code
+
+" VOoM: {{{3
 call dein#add('vim-voom/VOoM')               " 2-pane outliner
-call dein#add('majutsushi/tagbar')           " navigate source code
-call dein#add('tomtom/tgpg_vim.git')         " used in pw <vault>
 
-" CODING: {{{2
-call dein#add('neomake/neomake')             " async run makers/linters
-call dein#add('sbdchd/neoformat')            " requires formatters
-call dein#add('rstacruz/vim-closer')         " autoclose code constructs
-call dein#add('andymass/vim-matchup')        " jump around
-call dein#add('hertogp/dialk')               " K for help
-
-" COMPLETTION: {{{2
-call dein#add('Shougo/deoplete.nvim')
-call dein#add('ervandew/supertab')
-call dein#add('SirVer/ultisnips')
-call dein#add('honza/vim-snippets')
-call dein#add('autozimu/LanguageClient-neovim', {
-      \'rev': 'next',
-      \'do': 'bash install.sh'
-      \})
-
-let js_opts = {'on_ft': ['javascript', 'javascript.jsx']}
-call dein#add('othree/jspc.vim', js_opts)
-let js_opts = {
-      \'on_ft': ['javascript', 'javascript.jsx'],
-      \'build': 'npm install'}
-
-" deoplete-jedi = deoplete source for jedi
-" pip3 install neovim
-" pip3 install pynvim
-call dein#add('zchee/deoplete-jedi', {'do': ':UpdateRemotePlugins'}) " python
-
-" jedi     -> https://github.com/davidhalter/jedi
-" jedi-vim -> https://github.com/davidhalter/jedi-vim
-call dein#add('davidhalter/jedi-vim', {'on_ft': 'python'}) " python
-
-call dein#add('tweekmonster/deoplete-clang2')
-call dein#add('Shougo/neco-vim')
-call dein#add('Shougo/neoinclude.vim')
-call dein#add('ujihisa/neco-look')
-"call dein#add('zchee/deoplete-go', {'build': 'make'})
-call dein#add('Shougo/echodoc.vim')
-
-
-
-" EDITING: {{{2
-call dein#add('Shougo/denite.nvim')          " the new unite
-call dein#add('chemzqm/unite-location')      " qfix & location list sources
-
-" JAVASCRIPT: {{{2
-call dein#add('othree/yajs.vim')
-call dein#add('mxw/vim-jsx')
-call dein#add('heavenshell/vim-jsdoc')
-call dein#add('elzr/vim-json')
-call dein#add('HerringtonDarkholme/yats.vim')
-call dein#add('Quramy/vison')
-
-" PYTHON: {{{2
-"call dein#add('tmhedberg/SimpylFold', {'on_ft': 'python'})
-
-" HTML: {{{2
-call dein#add('othree/html5.vim')
-call dein#add('mattn/emmet-vim')
-call dein#add('valloric/MatchTagAlways', {'on_ft': 'html'})
-call dein#add('posva/vim-vue')
-call dein#add('skwp/vim-html-escape')
-
-" CSS: {{{2
-call dein#add('hail2u/vim-css3-syntax')
-call dein#add('ap/vim-css-color')
-
-" SASS: {{{2
-
-" COLORS: {{{2
-call dein#add('ajh17/Spacegray.vim.git')     " color scheme
-
-" Dein AutoInstall: {{{2
-if dein#check_install()
-  call dein#install()
-  let pluginsExist=1
-endif
-
-" DEIN END: {{{2
-call dein#end()
-" call dein#recache_runtimepath()  " if a plugin is disabled or modified
-call dein#save_state()
-
-
-" PLUGINS CONFIG: {{{1
-filetype plugin indent on
-syntax enable
-
-" SYSTEM: {{{2
-" PythonLib:
-py3 <<EOF
-# add (n)vim's pylib to sys.path
-# no import sys -> it's already available
-from os.path import expanduser, abspath
-PYLIB = abspath(expanduser('~/.config/nvim/pylib'))
-sys.path.append(PYLIB)
-del expanduser, abspath
-EOF
-
-" VimFugitive:
-" VimSurround:
-" VimCommentary:
-
-" VOoM:
 " - :Voom mmode will import voom_mode_<mmode>.py from voom_vimplugin2657
 "   package which creates the outline in Voom's treebuffer.
 " - :Voom (no mmode aka markupmode) will lookup the mmode using the filetype
@@ -205,6 +102,156 @@ augroup filetypedetect
   au BufNewFile,BufRead *.asy set ft=asy
   au BufNewFile,BufRead *.csv set ft=csv
 augroup END
+
+call dein#add('majutsushi/tagbar')           " navigate source code
+call dein#add('tomtom/tgpg_vim.git')         " used in pw <vault>
+
+" CODING: {{{2
+call dein#add('neomake/neomake')             " async run makers/linters
+call dein#add('sbdchd/neoformat')            " requires formatters
+call dein#add('rstacruz/vim-closer')         " autoclose code constructs
+call dein#add('andymass/vim-matchup')        " jump around
+call dein#add('hertogp/dialk')               " K for help
+
+" COMPLETTION: {{{2
+" call dein#add('Shougo/deoplete.nvim')  " gonna try coc.nvim
+
+" COC NVIM: {{{3
+" https://github.com/neoclide/coc.nvim
+" ----------------------------------------------------------------------
+" Install node and yarn. To install yarn on cli:
+" % curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+" % echo "deb https://dl.yarnpkg.com/debian/ stable main" \
+"   | sudo tee /etc/apt/sources.list.d/yarn.list
+" % sudo apt-get update && sudo apt-get install yarn
+" NB:
+"  - yarn doesnt like npm's package-lock.json (delete it)
+"  - run 'yarn' in your project -> yarn.lock
+" ----------------------------------------------------------------------
+" COC:
+" {'build': 'yarn install'} -> only runs on Install, not update
+" ~/.config/coc holds extensions installed by CocInstall <extension>
+" CocInstalled: coc-html coc-css coc-json coc-tsserver coc-pyls
+
+call dein#add('neoclide/coc.nvim', {
+      \'build': 'yarn install'
+      \})
+let g:coc_snippet_next = '<c-j>'
+let g:coc_snippet_prev = '<c-k>'
+
+augroup COCNVIM
+  au!
+  autocmd User CocNvimInit('runCommand', 'tsserver.watchBuild')
+augroup END
+
+set signcolumn=yes
+set updatetime=300
+set cmdheight=2
+
+" goto keys
+" dont touch gf for go-file
+" :map g   to see all g-maps
+nnoremap gi <Plug>(coc-diagnostic-info)
+nnoremap gd <Plug>(coc-definition)
+nnoremap gr <Plug>(coc-references)
+nnoremap gt <Plug>(coc-type-definition)
+nnoremap gi <Plug>(coc-implementation)
+nnoremap [c <Plug>(coc-diagnostics-prev)
+nnoremap ]c <Plug>(coc-diagnostics-next)
+nnoremap gh :call CocAction('doHover')<cr>
+nnoremap gR <Plug>(coc-rename)
+
+
+
+call dein#add('ervandew/supertab')
+call dein#add('SirVer/ultisnips')
+call dein#add('honza/vim-snippets')
+call dein#add('autozimu/LanguageClient-neovim', {
+      \'rev': 'next',
+      \'do': 'bash install.sh'
+      \})
+
+let js_opts = {'on_ft': ['javascript', 'javascript.jsx']}
+call dein#add('othree/jspc.vim', js_opts)
+let js_opts = {
+      \'on_ft': ['javascript', 'javascript.jsx'],
+      \'build': 'npm install'}
+
+" jedi     -> https://github.com/davidhalter/jedi
+" jedi-vim -> https://github.com/davidhalter/jedi-vim
+call dein#add('davidhalter/jedi-vim', {'on_ft': 'python'}) " python
+
+call dein#add('Shougo/neco-vim')
+call dein#add('Shougo/neoinclude.vim')
+call dein#add('ujihisa/neco-look')
+call dein#add('Shougo/echodoc.vim')
+
+
+
+" EDITING: {{{2
+call dein#add('Shougo/denite.nvim')          " the new unite
+call dein#add('chemzqm/unite-location')      " qfix & location list sources
+
+" JAVASCRIPT: {{{2
+call dein#add('othree/yajs.vim')
+call dein#add('mxw/vim-jsx')
+call dein#add('heavenshell/vim-jsdoc')
+call dein#add('elzr/vim-json')
+call dein#add('HerringtonDarkholme/yats.vim')
+call dein#add('Quramy/vison')
+
+" PYTHON: {{{2
+" Preparation:
+" % sudo -H pip3 install jedi python-language-server
+
+" HTML: {{{2
+call dein#add('othree/html5.vim')
+call dein#add('mattn/emmet-vim')
+call dein#add('valloric/MatchTagAlways', {'on_ft': 'html'})
+call dein#add('posva/vim-vue')
+call dein#add('skwp/vim-html-escape')
+
+" CSS: {{{2
+call dein#add('hail2u/vim-css3-syntax')
+call dein#add('ap/vim-css-color')
+
+" SASS: {{{2
+
+" COLORS: {{{2
+call dein#add('ajh17/Spacegray.vim.git')     " color scheme
+
+" Dein AutoInstall: {{{2
+if dein#check_install()
+  call dein#install()
+  let pluginsExist=1
+endif
+
+" DEIN END: {{{2
+call dein#end()
+" call dein#recache_runtimepath()  " if a plugin is disabled or modified
+call dein#save_state()
+
+
+" PLUGINS CONFIG: {{{1
+filetype plugin indent on
+syntax enable
+
+" SYSTEM: {{{2
+" PythonLib:
+py3 <<EOF
+# add (n)vim's pylib to sys.path
+# no import sys -> it's already available
+from os.path import expanduser, abspath
+PYLIB = abspath(expanduser('~/.config/nvim/pylib'))
+sys.path.append(PYLIB)
+del expanduser, abspath
+EOF
+
+" VimFugitive:
+" VimSurround:
+" VimCommentary:
+
+" VOoM:
 
 " TagBar:
 let g:tagbar_left=1
@@ -351,23 +398,6 @@ nnoremap <silent> ,r :Denite refecences<cr>
 
 
 
-" Deoplete:
-let g:deoplete#enable_at_startup=1
-let g:deoplete#auto_complete_delay=0
-set completeopt+=menuone,noinsert,noselect
-"set completeopt-=preview
-inoremap <C-Space> <C-x><C-o>
-
-let g:deoplete#omni#functions = {
-      \'javascript': ['LanguageClient#complete', 'jspc#omni']
-      \}
-let g:deoplete#sources = {
-      \'javascript.jsx': ['file', 'ultisnips']
-      \}
-
-let g:deoplete#file#enable_buffer_path=1
-let g:deoplete#ignore_sources={'_': ['around', 'buffer']}
-
 " UltiSnips
 let g:UltiSnipsExpandTrigger="<c-j>"
 inoremap <esc><tab> pumvisible() ? "\<c-n>" : "\<tab>"
@@ -384,11 +414,9 @@ function! Preview_func()
   endfunction
 autocmd WinEnter * call Preview_func()
 
-" DeopleteClang2:
 " NecoVim:
 " NeoInclude:
 " NecoLook:
-" DeopleteJedi:
 " EchoDoc:
 
 
@@ -508,7 +536,7 @@ augroup end
 
 " JediVim:
 " disable jedi-vim completion in favor of deoplete-jedi
-let g:jedi#completions_enabled = 0
+" let g:jedi#completions_enabled = 0
 
 
 " HTML: {{{2
