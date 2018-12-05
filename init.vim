@@ -85,6 +85,7 @@ for [k,v] in items({
       \'rest': 'wiki',
       \'rst': 'wiki',
       \'txt': 'pandoc',
+      \'markdown': 'pandoc',
       \'cfg': 'confg',
       \})
   let g:voom_ft_modes[k] = v
