@@ -18,12 +18,13 @@ set guicursor=
 " Notes:
 " - :Denite dein -> list of plugins & their branch + hash
 " - Run "dein#recache_runtimepath()" if a plugin is disabled or modified
+"   p> 
 
 " DEIN START: {{{2
 " dein.vim plugin manager
 if(!isdirectory(expand("$HOME/.config/nvim/repos/github.com/Shougo/dein.vim")))
-  call system(expand("mkdir -p $HOME/.config/nvim/repos/github.com"))
-  call system(expand("git clone https://github.com/Shougo/dein.vim $HOME/.config/nvim/repos/github.com/Shougo/dein.vim"))
+call system(expand("mkdir -p $HOME/.config/nvim/repos/github.com"))
+call system(expand("git clone https://github.com/Shougo/dein.vim $HOME/.config/nvim/repos/github.com/Shougo/dein.vim"))
 endif
 
 set runtimepath+=~/.config/nvim/repos/github.com/Shougo/dein.vim/
@@ -66,18 +67,18 @@ call dein#add('vim-voom/VOoM')               " 2-pane outliner
 " We'll pick up any voom_mode_<mmode>.py under repos, of any plugin therein.
 let g:VIMDIR = expand('<sfile>:p:h')  " this scripts directory
 function! MyVoomFiletypes() abort
-  let repos = globpath(g:VIMDIR, '/repos/**/voom_mode_*.py', 0, 1)
-  call map(repos, {k,v -> fnamemodify(v,':t')})  " keep tail (filename)
-  call map(repos, {k,v -> split(v, '[._]')[2]})  " keep mod's markupmode (*)
-  let pylib = globpath(g:VIMDIR, '/pylib/**/voom_mode_*.py', 0, 1)
-  call map(pylib, {k,v -> fnamemodify(v,':t')})
-  call map(pylib, {k,v -> split(v, '[._]')[2]})
-  let ft2modes = {}
-  " make sure private pylib comes last so it overrides any repos/markupmodes
-  for mode in extend(repos, pylib)
-    let ft2modes[mode] = mode
-  endfor
-  return ft2modes
+let repos = globpath(g:VIMDIR, '/repos/**/voom_mode_*.py', 0, 1)
+call map(repos, {k,v -> fnamemodify(v,':t')})  " keep tail (filename)
+call map(repos, {k,v -> split(v, '[._]')[2]})  " keep mod's markupmode (*)
+let pylib = globpath(g:VIMDIR, '/pylib/**/voom_mode_*.py', 0, 1)
+call map(pylib, {k,v -> fnamemodify(v,':t')})
+call map(pylib, {k,v -> split(v, '[._]')[2]})
+let ft2modes = {}
+" make sure private pylib comes last so it overrides any repos/markupmodes
+for mode in extend(repos, pylib)
+  let ft2modes[mode] = mode
+endfor
+return ft2modes
 endfunction
 
 let g:voom_ft_modes = MyVoomFiletypes()
@@ -85,14 +86,14 @@ let g:voom_ft_modes = MyVoomFiletypes()
 " mypython so comments like # -- start a headline
 " cfg/confg is for cisco config files (from tftpboot)
 for [k,v] in items({
-      \'python': 'mypython',
-      \'rest': 'wiki',
-      \'rst': 'wiki',
-      \'txt': 'pandoc',
-      \'markdown': 'pandoc',
-      \'cfg': 'confg',
-      \})
-  let g:voom_ft_modes[k] = v
+    \'python': 'mypython',
+    \'rest': 'wiki',
+    \'rst': 'wiki',
+    \'txt': 'pandoc',
+    \'markdown': 'pandoc',
+    \'cfg': 'confg',
+    \})
+let g:voom_ft_modes[k] = v
 endfor
 
 " with g:voom_ft_modes properly filled, we can now do simple :Voom[Toggle]
@@ -102,10 +103,10 @@ au FileType voomtree nmap <silent><buffer>J <down>
 au FileType voomtree nmap <silent><buffer>K <up>
 " confg filetype for Voom's confg outline mode
 augroup filetypedetect
-  au BufNewFile,BufRead *confg set ft=confg
-  au BufNewFile,BufRead *confg.txt set ft=confg
-  au BufNewFile,BufRead *.asy set ft=asy
-  au BufNewFile,BufRead *.csv set ft=csv
+au BufNewFile,BufRead *confg set ft=confg
+au BufNewFile,BufRead *confg.txt set ft=confg
+au BufNewFile,BufRead *.asy set ft=asy
+au BufNewFile,BufRead *.csv set ft=csv
 augroup END
 
 call dein#add('majutsushi/tagbar')           " navigate source code
@@ -114,6 +115,7 @@ call dein#add('tomtom/tgpg_vim.git')         " used in pw <vault>
 " CODING: {{{2
 call dein#add('neomake/neomake')             " async run makers/linters
 call dein#add('sbdchd/neoformat')            " requires formatters
+call dein#add('tpope/vim-endwise')           " auto-end structures
 call dein#add('rstacruz/vim-closer')         " autoclose code constructs
 call dein#add('andymass/vim-matchup')        " jump around
 call dein#add('hertogp/dialk')               " K for help
@@ -199,7 +201,7 @@ call dein#add('chemzqm/unite-location')      " qfix & location list sources
 call dein#add('https://github.com/godlygeek/tabular.git') " |-tables
 
 " LUA {{{2
-" call dein#add('wolfgangmehner/lua-support')
+call dein#add('wolfgangmehner/lua-support')
 
 " JAVASCRIPT: {{{2
 call dein#add('othree/yajs.vim')
@@ -525,7 +527,10 @@ endfunction
 " https://github.com/WolfgangMehner/lua-support
 augroup Lua
 au!
-au FileType lua set tw=2 sw=2 ts=2
+au FileType lua 
+      \ set tw=2 sw=2 ts=2 fo-=cro |
+      \ let b:closer = 1 |
+      \ let b:closer_flags = '([{'
 augroup end
 
 " JAVASCRIPT: {{{2
