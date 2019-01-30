@@ -4,8 +4,10 @@
 
 " -----------------------------------------------------------------
 " TODO
-" q -> donot start recording, in SCRATCH like bufs quits the buffer
 " VOom -> add my own outline modes.py in ~/.config/nvim/pylib/voom
+"  - for lua
+"  - for html
+"  - for css / sass
 " -----------------------------------------------------------------
 
 
@@ -13,7 +15,9 @@ let &packpath = &runtimepath
 set guicursor=
 
 " PLUGINS INSTALL: {{{1
-" Run "dein#recache_runtimepath()" if a plugin is disabled or modified
+" Notes:
+" - :Denite dein -> list of plugins & their branch + hash
+" - Run "dein#recache_runtimepath()" if a plugin is disabled or modified
 
 " DEIN START: {{{2
 " dein.vim plugin manager
@@ -192,6 +196,10 @@ call dein#add('Shougo/echodoc.vim')
 " EDITING: {{{2
 call dein#add('Shougo/denite.nvim')          " the new unite
 call dein#add('chemzqm/unite-location')      " qfix & location list sources
+call dein#add('https://github.com/godlygeek/tabular.git') " |-tables
+
+" LUA {{{2
+" call dein#add('wolfgangmehner/lua-support')
 
 " JAVASCRIPT: {{{2
 call dein#add('othree/yajs.vim')
@@ -238,7 +246,7 @@ filetype plugin indent on
 syntax enable
 
 " SYSTEM: {{{2
-" PythonLib:
+" PythonLib: {{{3
 py3 <<EOF
 # add (n)vim's pylib to sys.path
 # no import sys -> it's already available
@@ -252,9 +260,9 @@ EOF
 " VimSurround:
 " VimCommentary:
 
-" VOoM:
+" VOoM: {{{3
 
-" TagBar:
+" TagBar: {{{3
 let g:tagbar_left=1
 nnoremap <space>t :TagbarToggle<cr>
 
@@ -330,10 +338,10 @@ call neomake#quickfix#enable()
 "   { "singleQoute": true }                       # if you want all 's
 " - prettier prefers "s, eslint prefers 's
 let g:standard_prettier_settings = {
-              \ 'exe': 'prettier',
-              \ 'args': ['--stdin', '--stdin-filepath', '%:p'],
-              \ 'stdin': 1,
-              \ }
+            \ 'exe': 'prettier',
+            \ 'args': ['--stdin', '--stdin-filepath', '%:p'],
+            \ 'stdin': 1,
+            \ }
 let g:neoformat_javascript_prettier = g:standard_prettier_settings
 let g:neoformat_enabled_javascript = ['prettier']
 let g:neoformat_scss_prettier = g:standard_prettier_settings
@@ -365,8 +373,8 @@ nnoremap ,f :Neoformat<cr>
 "   see he:VimEnter:
 nnoremap <space>k :<c-u>call DialK(mode())<cr>
 augroup DialKGroup
-  au!
-  au FileType python set keywordprg=pydoc3
+au!
+au FileType python set keywordprg=pydoc3
 augroup end
 
 
@@ -384,10 +392,10 @@ let g:SuperTabClosePreviewOnPopupClose = 1
 " - workspaceSymbol list of project symbols
 let g:LanguageClient_autoStart = 1
 let g:LanguageClient_serverCommands = {
-      \'javascript': ['javascript-typescript-stdio'],
-      \'javascript.jsx': ['javascript-typescript-stdio'],
-      \'typescript': ['javascript-typescript-stdio']
-      \}
+    \'javascript': ['javascript-typescript-stdio'],
+    \'javascript.jsx': ['javascript-typescript-stdio'],
+    \'typescript': ['javascript-typescript-stdio']
+    \}
 
 nnoremap <silent> ,h :call LanguageClient#textDocument_hover()<cr>
 nnoremap <silent> ,d :call LanguageClient#textDocument_definition()<cr>
@@ -409,10 +417,10 @@ let g:echodoc_enable_at_startup=1
 
 " clean preview window
 function! Preview_func()
-    if &pvw
-      setlocal nonumber norelativenumber
-     endif
-  endfunction
+  if &pvw
+    setlocal nonumber norelativenumber
+   endif
+endfunction
 autocmd WinEnter * call Preview_func()
 
 " NecoVim:
@@ -423,7 +431,7 @@ autocmd WinEnter * call Preview_func()
 
 
 " EDITING: {{{2
-" Denite:
+" Denite: {{{3
 " use ag for grepping files
 call denite#custom#var('grep', 'command', ['ag'])
 call denite#custom#var('grep', 'default_opts', ['-i', '--vimgrep'])
@@ -433,8 +441,8 @@ call denite#custom#var('grep', 'separator', ['--'])
 call denite#custom#var('grep', 'final_opts', [])
 " see also .gitignore files for more inspiration
 call denite#custom#filter('matcher/ignore_globs', 'ignore_globs',
-      \ ['.git', '__pycache__', 'venv', 'img', '*.min.*', 'node_modules',
-      \  'dist', 'build', '*.swp', '.cache*'])
+    \ ['.git', '__pycache__', 'venv', 'img', '*.min.*', 'node_modules',
+    \  'dist', 'build', '*.swp', '.cache*'])
 " narrow grep'd source also by path
 call denite#custom#source('grep', 'converters', ['converter/abbr_word'])
 
@@ -459,13 +467,11 @@ nnoremap <space><space> :Denite -resume<cr>
 nnoremap ,q :Denite -mode=normal -auto-resize quickfix<cr>
 nnoremap ,l :Denite -mode=normal -auto-resize location_list<cr>
 
-
 " Open Or Find Files:
 " f browse to open a file, from current buffer dir
 " F browse to Open a file, from project root dir.
 nnoremap <space>f :DeniteBufferDir -mode=insert file/rec<cr>
 nnoremap <space>F :DeniteProjectDir -mode=insert file/rec<cr>
-
 
 " Grep Files:
 " g grep for <pattern> in files under dir
@@ -478,7 +484,6 @@ nnoremap <space># :DeniteCursorWord -mode=normal grep<cr>
 " search vim's help files
 nnoremap <space>h :Denite help<cr>
 nnoremap <space>H :DeniteCursorWord help<cr>
-
 
 " Find In Buffers:
 " <space><letter>
@@ -499,38 +504,58 @@ nnoremap <space>B :Denite -mode=normal buffer:!<cr>
 
 
 " Tabular:
+" From https://gist.github.com/tpope/287147
 " aligns table using Tabular on ' | '-character (need the spaces!)
 " - | symbols should be separated from text with 1+ spaces!
-" nnoremap <leader>t  :call TabularAlign()<cr>
+nnoremap <leader>t  :call TabularAlign()<cr>
+inoremap <silent> <Bar>   <Bar><Esc>:call TabularAlign()<CR>a
 
+function! TabularAlign()
+let p = '^\s*|\s.*\s|\s*$'
+if exists(':Tabularize') && getline('.') =~# '^\s*|' && (getline(line('.')-1) =~# p || getline(line('.')+1) =~# p)
+  let column = strlen(substitute(getline('.')[0:col('.')],'[^|]','','g'))
+  let position = strlen(matchstr(getline('.')[0:col('.')],'.*|\s*\zs.*'))
+  Tabularize/|/l1
+  normal! 0
+  call search(repeat('[^|]*|',column).'\s\{-\}'.repeat('.',position),'ce',line('.'))
+endif
+endfunction
+
+" LUA {{{2
+" https://github.com/WolfgangMehner/lua-support
+augroup Lua
+au!
+au FileType lua set tw=2 sw=2 ts=2
+augroup end
 
 " JAVASCRIPT: {{{2
-" Yajs:
+augroup JS
+au!
+au FileType javascript set tw=2 sw=2 ts=2
+augroup end
+
 " VimJSX:
 " VimJSDoc:
 " VimJSON:
-" Yats:
-" Vison:
-" JSPC:
 
 " PYTHON: {{{2
 " pylint3 error output format string: see: https://docs.pylint.org/en/1.6.0/output.html
 augroup PyMake
-    au!
-    " *Trick*  -- make error code/category visible in quick window
-    " - ensure msg-template list that info in efm's %m part
-    " - 1st efm string, 'eats' output given by msg-template:
-    "   %f:    {path}:
-    "   %t%n:  {msg_id}  (eg C301)
-    "   %l:%c: {line}:{column}:
-    "   %m:    |{msg_id}| {msg} [{symbol}]
-    " - 2nd efm string, ignores all (other) lines:
-    "   %-G    means ignore
-    "   %.%#   means .* and matches all (other) lines not matched previously
-    " - quickfix syntax hihglighting should make Error codes (msg_id) standout
-    au FileType python set makeprg=pylint3\ -rn\ -ftext\ --msg-template='{path}:{msg_id}:{line}:{column}:\|{msg_id}\|\ {msg}\ [{symbol}]'\ *.py
-    " au FileType python set efm=%f:%t%n:%l:%c:%m,*%#\ %#%m
-    au FileType python set efm=%f:%t%n:%l:%c:%m,%-G%.%#
+  au!
+  " *Trick*  -- make error code/category visible in quick window
+  " - ensure msg-template list that info in efm's %m part
+  " - 1st efm string, 'eats' output given by msg-template:
+  "   %f:    {path}:
+  "   %t%n:  {msg_id}  (eg C301)
+  "   %l:%c: {line}:{column}:
+  "   %m:    |{msg_id}| {msg} [{symbol}]
+  " - 2nd efm string, ignores all (other) lines:
+  "   %-G    means ignore
+  "   %.%#   means .* and matches all (other) lines not matched previously
+  " - quickfix syntax hihglighting should make Error codes (msg_id) standout
+  au FileType python set makeprg=pylint3\ -rn\ -ftext\ --msg-template='{path}:{msg_id}:{line}:{column}:\|{msg_id}\|\ {msg}\ [{symbol}]'\ *.py
+  " au FileType python set efm=%f:%t%n:%l:%c:%m,*%#\ %#%m
+  au FileType python set efm=%f:%t%n:%l:%c:%m,%-G%.%#
 
 
 augroup end
@@ -546,23 +571,23 @@ augroup end
 " Emmet:
 " use tab to complete Emmet expandable stuff
 function! s:expand_html_tab()
-  " Remapping <C-y>, just doesn't cut it.
-  " try to determine if we're within quotes or tags.
-  " if so, assume we're in an emmet fill area.
-   let line = getline('.')
-   if col('.') < len(line)
-     let line = matchstr(line, '[">][^<"]*\%'.col('.').'c[^>"]*[<"]')
-     if len(line) >= 2
-        return "\<C-n>"
-     endif
+" Remapping <C-y>, just doesn't cut it.
+" try to determine if we're within quotes or tags.
+" if so, assume we're in an emmet fill area.
+ let line = getline('.')
+ if col('.') < len(line)
+   let line = matchstr(line, '[">][^<"]*\%'.col('.').'c[^>"]*[<"]')
+   if len(line) >= 2
+      return "\<C-n>"
    endif
-  " expand anything emmet thinks is expandable.
-  if emmet#isExpandable()
-    return emmet#expandAbbrIntelligent("\<tab>")
-    " return "\<C-y>,"
-  endif
-  " return a regular tab character
-  return "\<tab>"
+ endif
+" expand anything emmet thinks is expandable.
+if emmet#isExpandable()
+  return emmet#expandAbbrIntelligent("\<tab>")
+  " return "\<C-y>,"
+endif
+" return a regular tab character
+return "\<tab>"
 endfunction
 " let g:user_emmet_expandabbr_key='<Tab>'
 " imap <expr> <tab> emmet#expandAbbrIntelligent("\<tab>")
@@ -643,31 +668,31 @@ au FileType javascript.jsx set sts=2 sw=2 tabstop=2
 
 " Colors: {{{2
 if &t_Co > 2 || has("gui_running")
-  set hlsearch               " highlight search
-  set background=dark
-  set t_Co=256
-  colorscheme spacegray
-  syntax on                  " syntax highlighting
-  set cursorline             " highlight current line
-  highlight CursorLine  ctermbg=234
-  highlight ColorColumn ctermbg=DarkGrey ctermfg=white
-  call matchadd('ColorColumn','\%81v', 100) " only color 81st column
-  hi Pmenu    term=None cterm=italic ctermfg=lightgrey ctermbg=darkgrey "250 ctermbg=10
-  hi PmenuSel term=None cterm=italic ctermfg=lightgrey ctermbg=darkblue
-  hi LineNr ctermfg=239 ctermbg=234
+set hlsearch               " highlight search
+set background=dark
+set t_Co=256
+colorscheme spacegray
+syntax on                  " syntax highlighting
+set cursorline             " highlight current line
+highlight CursorLine  ctermbg=234
+highlight ColorColumn ctermbg=DarkGrey ctermfg=white
+call matchadd('ColorColumn','\%81v', 100) " only color 81st column
+hi Pmenu    term=None cterm=italic ctermfg=lightgrey ctermbg=darkgrey "250 ctermbg=10
+hi PmenuSel term=None cterm=italic ctermfg=lightgrey ctermbg=darkblue
+hi LineNr ctermfg=239 ctermbg=234
 endif
 
 augroup OnColorScheme
-  au!
-  autocmd ColorScheme * hi Comment cterm=italic
+au!
+autocmd ColorScheme * hi Comment cterm=italic
 augroup END
 
 if has("gui_running")
-    " gui seems slow, turn some stuff off
-    "set nowrap
-    colorscheme spacegray
-    set scrolljump=5
-    set noshowcmd
+  " gui seems slow, turn some stuff off
+  "set nowrap
+  colorscheme spacegray
+  set scrolljump=5
+  set noshowcmd
 endif
 
 
@@ -691,56 +716,56 @@ au InsertLeave * hi User4 ctermbg=65 ctermfg=190 cterm=none
 "# echo fnamemodify(fugitive#extract_git-dir('.'),":p:h") -> relative to cur dir
 "use expand('%:p') to make it relative to current buffer's filename
 function! SL_git_info() abort
-    if !exists('b:git_dir')
-        return ''
-    endif
-    let info= fnamemodify(b:git_dir,':h:t')
-    let info.= "(" . fugitive#head() . ")"
-    "return fnamemodify(b:git_dir,':h:t') . " (" . fugitive#head() . ")"
-    return info
+  if !exists('b:git_dir')
+      return ''
+  endif
+  let info= fnamemodify(b:git_dir,':h:t')
+  let info.= "(" . fugitive#head() . ")"
+  "return fnamemodify(b:git_dir,':h:t') . " (" . fugitive#head() . ")"
+  return info
 endfunction
 
 function! SL_neomake() abort
-  " give a proper count of issues in location/quickfix lists
-  let larr = []
-  for item in sort(items(neomake#statusline#LoclistCounts()))
-    call add(larr, join(item, ":"))
-  endfor
-  let qarr = []
-  for item in sort(items(neomake#statusline#QflistCounts()))
-    call add(qarr, join(item, ":"))
-  endfor
-  let sl = ""
-  if len(larr)
-    let sl .= "l[".join(larr, ",")."]"
-  endif
-  if len(qarr)
-    let sl .= " q[".join(qarr, ",")."]"
-  endif
+" give a proper count of issues in location/quickfix lists
+let larr = []
+for item in sort(items(neomake#statusline#LoclistCounts()))
+  call add(larr, join(item, ":"))
+endfor
+let qarr = []
+for item in sort(items(neomake#statusline#QflistCounts()))
+  call add(qarr, join(item, ":"))
+endfor
+let sl = ""
+if len(larr)
+  let sl .= "l[".join(larr, ",")."]"
+endif
+if len(qarr)
+  let sl .= " q[".join(qarr, ",")."]"
+endif
 
-  " TODO just use these to build a Neomake StatusLine fragment?
-  let a = neomake#statusline#LoclistStatus()
-  let b = neomake#statusline#QflistStatus()
-  let c = [ len(a) ? 'll[' . a .']' : a, len(b) ? 'qf['.b.']' : '' ]
-  return tolower(join(filter(c, 'len(v:val)'), ' '))
+" TODO just use these to build a Neomake StatusLine fragment?
+let a = neomake#statusline#LoclistStatus()
+let b = neomake#statusline#QflistStatus()
+let c = [ len(a) ? 'll[' . a .']' : a, len(b) ? 'qf['.b.']' : '' ]
+return tolower(join(filter(c, 'len(v:val)'), ' '))
 
 
 
-  let c = len(a) ? ' l[' . a .'] ' : ''
-  let c = len(b) ? c . 'q[' . b . '] ' : c
-  return c
+let c = len(a) ? ' l[' . a .'] ' : ''
+let c = len(b) ? c . 'q[' . b . '] ' : c
+return c
 
-  if (len(a))
-    let c = ' l[' . a . ']'
-  endif
-  if len(b)
-    let c = c . ' q[' . b . ']'
-  endif
-  return len(c) ? c .' ' : c
+if (len(a))
+  let c = ' l[' . a . ']'
+endif
+if len(b)
+  let c = c . ' q[' . b . ']'
+endif
+return len(c) ? c .' ' : c
 
-  let sl = sl . ' | ' . neomake#statusline#LoclistStatus() . ' | '
-  let sl = sl . neomake#statusline#QflistStatus() . ' |'
-  return len(sl) ? " " . sl . " " : sl
+let sl = sl . ' | ' . neomake#statusline#LoclistStatus() . ' | '
+let sl = sl . neomake#statusline#QflistStatus() . ' |'
+return len(sl) ? " " . sl . " " : sl
 endfunction
 
 set statusline=""                              " start out blank
@@ -767,29 +792,60 @@ set statusline+=\ [%{&fileformat}]
 
 " Filetypes: {{{2
 augroup vimrcEx
-  au!
-  autocmd FileType text setlocal textwidth=78
+au!
+autocmd FileType text setlocal textwidth=78
 
-  " try moving to last known cursor position upon re-editing a file
-  autocmd BufReadPost *
-    \ if line("'\"") > 0 && line("'\"") <= line("$") |
-    \   exe "normal g`\"" |
-    \ endif
+" try moving to last known cursor position upon re-editing a file
+autocmd BufReadPost *
+  \ if line("'\"") > 0 && line("'\"") <= line("$") |
+  \   exe "normal g`\"" |
+  \ endif
 augroup END
 
+" EasyQuit: {{{3
+" Easy quit nofile-like windows
+augroup QuitNoFile
+au!
+" Notes:
+" - sometimes buftype gets set after the bufenter event
+au bufenter * if &buftype=='nofile'|nnoremap <buffer> q <esc>:q<cr>|endif
+au FileType nofile, qf nnoremap <buffer> q <esc>:q<cr><c-w>p
+au syntax * if &buftype=='nofile'|nnoremap <buffer> q <esc>:q<cr>|endif
+au syntax * if &buftype=='quickfix'|nnoremap <buffer> q <esc>:q<cr>|endif
+au syntax * if &buftype=='help'|nnoremap <buffer> q <esc>:q<cr>|endif
+au syntax * if &syntax == 'man'|nnoremap <buffer> q <esc>:q<cr>|endif
+au syntax * if bufname('%')=='__doc__'|nnoremap <buffer> q <esc>:q<cr>|endif
+au syntax * if bufname('%')=='[Scratch]'|nnoremap <buffer> q <esc>:q<cr>|endif
+augroup end
+
+"
+" Pandoc: {{{3
+augroup auPandoc
+  au!
+  autocmd FileType pandoc set formatoptions="want"
+  " makeprg is setup via vim-pandoc's compiler
+  "   see ~/.vim/after/compiler/pandoc.vim, where a proper makeprg is set
+  "   this method does not need the ~/bin/mk.notes shell script.
+  " <F4> - to compile the current markdown buffer to pdf
+  " <S-F4> - to compile & preview the current markdown buffer in evince
+  " See help jobstart (neovim) -> arg ["cmd", "args"] -> run directly
+  autocmd FileType markdown,pandoc nnoremap <buffer><S-F4> <esc>:silent make\|redraw!\|copen<cr>
+  autocmd FileType markdown,pandoc nnoremap <buffer><F4> <esc>:silent make\|redraw!\|call jobstart(["xdg-open", expand("%:r").".pdf"])<cr>
+  autocmd FileType markdown,pandoc compiler pandoc
+augroup END
 
 " KEYMAPS: {{{1
 " Generic: {{{2
 " TODO
 nnoremap <f5> :redraw!<cr>
 nnoremap <f8> :echom 'pos:(' . line(".") . "," . col(".") . ")"
-      \. ' -> hi:<'
-      \. synIDattr(synID(line("."),col("."),1),"name")
-      \. '>, transparent:<'
-      \. synIDattr(synID(line("."),col("."),0),"name")
-      \. '>, local:<'
-      \. synIDattr(synIDtrans(synID(line("."),col("."),1)),"name")
-      \. '>'<CR>
+    \. ' -> hi:<'
+    \. synIDattr(synID(line("."),col("."),1),"name")
+    \. '>, transparent:<'
+    \. synIDattr(synID(line("."),col("."),0),"name")
+    \. '>, local:<'
+    \. synIDattr(synIDtrans(synID(line("."),col("."),1)),"name")
+    \. '>'<CR>
 
 " Move: {{{2
 " Shift-H/L move tabs left/right
