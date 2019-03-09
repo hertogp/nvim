@@ -39,7 +39,7 @@ def hook_makeOutline(VO, blines):
 
             level = 1 + indent
             if words[0].lower() == 'function':
-                tline = ' '.join(words[1:2])
+                tline = ' '.join(words[0:2])
             elif words[1].lower() == 'function':
                 tline = ' '.join(words[1:3])
             else:
