@@ -30,7 +30,7 @@ def hook_makeOutline(VO, blines):
 
         if words[0] == '--[[':
             level = 1
-            tline = '[[ ' + " ".join(words[1:3])
+            tline = '[[ ' + " ".join(words[1:4])
         elif words[0].lower() in L1WORDS:
             # assumes spaces are used to indent, not tabs
             indent = int((len(line) - len(line.lstrip(" ")))/INDENT)
@@ -38,10 +38,12 @@ def hook_makeOutline(VO, blines):
                 indent = int(len(line) - len(line.lstrip("\t")))
 
             level = 1 + indent
-            if words[1].lower() == 'function':
+            if words[0].lower() == 'function':
+                tline = ' '.join(words[1:2])
+            elif words[1].lower() == 'function':
                 tline = ' '.join(words[1:3])
             else:
-                tline = ' '.join(words[0:2])
+                continue
 
         if level < 0:
             continue

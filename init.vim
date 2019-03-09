@@ -121,7 +121,7 @@ call dein#add('andymass/vim-matchup')        " jump around
 call dein#add('hertogp/dialk')               " K for help
 
 " COMPLETTION: {{{2
-" call dein#add('Shougo/deoplete.nvim')  " gonna try coc.nvim
+call dein#add('Shougo/deoplete.nvim')  " gonna try coc.nvim
 
 " COC NVIM: {{{3
 " https://github.com/neoclide/coc.nvim
@@ -140,16 +140,16 @@ call dein#add('hertogp/dialk')               " K for help
 " ~/.config/coc holds extensions installed by CocInstall <extension>
 " CocInstalled: coc-html coc-css coc-json coc-tsserver coc-pyls
 
-call dein#add('neoclide/coc.nvim', {
-      \'build': 'yarn install'
-      \})
-let g:coc_snippet_next = '<c-j>'
-let g:coc_snippet_prev = '<c-k>'
+" call dein#add('neoclide/coc.nvim', {
+"       \'build': 'yarn install'
+"       \})
+" let g:coc_snippet_next = '<c-j>'
+" let g:coc_snippet_prev = '<c-k>'
 
-augroup COCNVIM
-  au!
-  autocmd User CocNvimInit('runCommand', 'tsserver.watchBuild')
-augroup END
+" augroup COCNVIM
+"   au!
+"   autocmd User CocNvimInit('runCommand', 'tsserver.watchBuild')
+" augroup END
 
 set signcolumn=yes
 set updatetime=300
@@ -158,15 +158,15 @@ set cmdheight=2
 " goto keys
 " dont touch gf for go-file
 " :map g   to see all g-maps
-nnoremap gi <Plug>(coc-diagnostic-info)
-nnoremap gd <Plug>(coc-definition)
-nnoremap gr <Plug>(coc-references)
-nnoremap gt <Plug>(coc-type-definition)
-nnoremap gi <Plug>(coc-implementation)
-nnoremap [c <Plug>(coc-diagnostics-prev)
-nnoremap ]c <Plug>(coc-diagnostics-next)
-nnoremap gh :call CocAction('doHover')<cr>
-nnoremap gR <Plug>(coc-rename)
+" nnoremap gi <Plug>(coc-diagnostic-info)
+" nnoremap gd <Plug>(coc-definition)
+" nnoremap gr <Plug>(coc-references)
+" nnoremap gt <Plug>(coc-type-definition)
+" nnoremap gi <Plug>(coc-implementation)
+" nnoremap [c <Plug>(coc-diagnostics-prev)
+" nnoremap ]c <Plug>(coc-diagnostics-next)
+" nnoremap gh :call CocAction('doHover')<cr>
+" nnoremap gR <Plug>(coc-rename)
 
 
 
@@ -527,8 +527,8 @@ endfunction
 " https://github.com/WolfgangMehner/lua-support
 augroup Lua
 au!
-au FileType lua 
-      \ set tw=2 sw=2 ts=2 fo-=cro |
+au FileType lua
+      \ set tw=79 sw=2 ts=2 fo-=cro |
       \ let b:closer = 1 |
       \ let b:closer_flags = '([{'
 augroup end
@@ -536,7 +536,7 @@ augroup end
 " JAVASCRIPT: {{{2
 augroup JS
 au!
-au FileType javascript set tw=2 sw=2 ts=2
+au FileType javascript set tw=79 sw=2 ts=2
 augroup end
 
 " VimJSX:
@@ -798,7 +798,7 @@ set statusline+=\ [%{&fileformat}]
 " Filetypes: {{{2
 augroup vimrcEx
 au!
-autocmd FileType text setlocal textwidth=78
+autocmd FileType text setlocal textwidth=79
 
 " try moving to last known cursor position upon re-editing a file
 autocmd BufReadPost *
@@ -813,12 +813,13 @@ augroup QuitNoFile
 au!
 " Notes:
 " - sometimes buftype gets set after the bufenter event
-au bufenter * if &buftype=='nofile'|nnoremap <buffer> q <esc>:q<cr>|endif
-au FileType nofile, qf nnoremap <buffer> q <esc>:q<cr><c-w>p
-au syntax * if &buftype=='nofile'|nnoremap <buffer> q <esc>:q<cr>|endif
-au syntax * if &buftype=='quickfix'|nnoremap <buffer> q <esc>:q<cr>|endif
-au syntax * if &buftype=='help'|nnoremap <buffer> q <esc>:q<cr>|endif
-au syntax * if &syntax == 'man'|nnoremap <buffer> q <esc>:q<cr>|endif
+" au bufenter * if &buftype=='nofile'|nnoremap <buffer> q <esc>:q<cr>|endif
+"" -- I seem to loose buffer when switch with denite via <space>b ...???
+"au FileType nofile, qf nnoremap <buffer> q <esc>:q<cr><c-w>p
+"au syntax * if &buftype=='nofile'|nnoremap <buffer> q <esc>:q<cr>|endif
+"au syntax * if &buftype=='quickfix'|nnoremap <buffer> q <esc>:q<cr>|endif
+"au syntax * if &buftype=='help'|nnoremap <buffer> q <esc>:q<cr>|endif
+"au syntax * if &syntax == 'man'|nnoremap <buffer> q <esc>:q<cr>|endif
 au syntax * if bufname('%')=='__doc__'|nnoremap <buffer> q <esc>:q<cr>|endif
 au syntax * if bufname('%')=='[Scratch]'|nnoremap <buffer> q <esc>:q<cr>|endif
 augroup end
