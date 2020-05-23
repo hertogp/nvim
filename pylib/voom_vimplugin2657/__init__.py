@@ -6,3 +6,5 @@ __path__ = pkgutil.extend_path(__path__, __name__)
 # - required as of VOoM v5.2, where voom_vimplugin2657 has an __init__.py
 # - in init.vim, sys.path.insert(0,<dotvimdir>/pylib), pylib being the
 #   parent for our user version of voom_vimplugin2657.
+# - be sure to use python <<EOF, not py3 <<EOF, since the home brewn voom modes
+#   are using python2

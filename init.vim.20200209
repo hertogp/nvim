@@ -15,70 +15,66 @@ let &packpath = &runtimepath
 set guicursor=
 
 " PLUGINS INSTALL: {{{1
-" auto install plug.vim
-if empty(glob('~/.local/share/nvim/site/autoload/plug.vim'))
-  silent !curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs
-    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+" Notes:
+" - :Dein -h                      -> view subcommands, as list, 
+"   :Dein check-update/install    -> view results with :Dein log ..
+" - :Denite dein                  -> list of plugins & their branch + hash
+" - :call dein#recache_runtimepath()   ->if a plugin is disabled or modified
+" - :..    -> update plugings
+
+" DEIN START: {{{2
+" dein.vim plugin manager
+if(!isdirectory(expand("$HOME/.config/nvim/repos/github.com/Shougo/dein.vim")))
+  call system(expand("mkdir -p $HOME/.config/nvim/repos/github.com"))
+  call system(expand("git clone https://github.com/Shougo/dein.vim $HOME/.config/nvim/repos/github.com/Shougo/dein.vim"))
 endif
 
-call plug#begin('~/.config/nvim/plugged')
+set runtimepath+=~/.config/nvim/repos/github.com/Shougo/dein.vim/
+call dein#begin(expand('~/.config/nvim'))
+" DEIN: {{{3
+call dein#add('Shougo/dein.vim')
+" DEIN-COMMAND {{{3
+call dein#add('haya14busa/dein-command.vim')
 
-" Plug 'HerringtonDarkholme/yats.vim'
-" Plug 'ap/vim-css-color'
-" Plug 'hail2u/vim-css3-syntax'
-" Plug 'heavenshell/vim-jsdoc'
-" Plug 'https://github.com/godlygeek/tabular.git' " |-tables
-" Plug 'mxw/vim-jsx'
-" Plug 'othree/html5.vim'
-" Plug 'othree/yajs.vim'
-" Plug 'posva/vim-vue'
-" Plug 'skwp/vim-html-escape'
-"Plug 'autozimu/LanguageClient-neovim', { \'rev': 'next', \'do': 'bash install.sh' \}
-Plug 'ervandew/supertab'
+" SYSTEM: {{{2
+" call dein#add('scrooloose/syntastic.git')    " syntax checker(s)
+" VIM_FUGITIVE: {{{3
+call dein#add('tpope/vim-fugitive.git')      " for statusline
+" VIM_SURROUND {{{3
+call dein#add('tpope/vim-surround')          " change surrounds easily
+" VIM_COMMENTARY {{{3
+call dein#add('tpope/vim-commentary')        " gc to (un)comment code
 
-Plug 'NLKNguyen/papercolor-theme'
-Plug 'neoclide/coc.nvim', {'do': 'yarn -install --frozen-lockfile'}
-Plug 'Quramy/vison'
-Plug 'Shougo/denite.nvim', {'do': ':UpdateRemotePlugins'}
-Plug 'Shougo/deoplete.nvim'
-Plug 'Shougo/echodoc.vim'
-Plug 'Shougo/neco-vim'
-Plug 'Shougo/neoinclude.vim'
-Plug 'SirVer/ultisnips'
-Plug 'ajh17/Spacegray.vim'     " color scheme
-Plug 'andymass/vim-matchup'        " jump around
-Plug 'chemzqm/unite-location'      " qfix & location list sources
-Plug 'davidhalter/jedi-vim', {'on_ft': 'python'}
-Plug 'elzr/vim-json'
-Plug 'fatih/vim-go'
-Plug 'hertogp/dialk'               " K for help
-Plug 'honza/vim-snippets'
-Plug 'majutsushi/tagbar'           " navigate source code
-Plug 'mattn/emmet-vim'
-Plug 'neomake/neomake'             " async run makers/linters
-Plug 'othree/jspc.vim', {'on_ft': ['javascript', 'javascript.jsx']}
-Plug 'rstacruz/vim-closer'         " autoclose code constructs
-Plug 'sbdchd/neoformat'            " requires formatters
-Plug 'tomtom/tgpg_vim'         " used in pw <vault>
-Plug 'tpope/vim-commentary'        " gc to (un)comment code
-Plug 'tpope/vim-endwise'           " auto-end structures
-Plug 'tpope/vim-fugitive'      " for statusline
-Plug 'tpope/vim-surround'          " change surrounds easily
-Plug 'ujihisa/neco-look'
-Plug 'valloric/MatchTagAlways', {'on_ft': 'html'}
-Plug 'vim-voom/VOoM'               " 2-pane outliner
-Plug 'wolfgangmehner/lua-support'
-Plug 'posva/vim-vue'
-Plug 'elmcast/elm-vim'
-Plug 'elixir-editors/vim-elixir'
-Plug 'mhinz/vim-mix-format'
-call plug#end()
+" VOoM: {{{3
+call dein#add('vim-voom/VOoM')               " 2-pane outliner
 
+" - :Voom mmode will import voom_mode_<mmode>.py from voom_vimplugin2657
+"   package which creates the outline in Voom's treebuffer.
+" - :Voom (no mmode aka markupmode) will lookup the mmode using the filetype
+"   as key into the dict g:voom_ft_modes, which is empty by default (you have
+"   to fill it yourself, mapping filetypes to desired markupmodes).
+" - ./pylib subdir (also) contains a voom_vimplugin2657 subdir and it's
+"   __init__.py turns voom_vimplugin2657 into a namespace, so private
+"   markupmodes (voom_mode_<mymode>.py) in that dir are available to Voom.
+" - if g:voom_ft_modes[&filetype] comes up empty, Voom uses g:voom_mode_default
+"   as its default markupmode (usually fmr, unless you change it here).
+" So:
+" - we fill g:voom_ft_modes by scouring Voom's namespace and our own additions
+"   by globbing for voom_mode_<mmode>.py files and adding mmode -> mmode
+"   mappings to g:voom_ft_modes. Following this, we override some of the
+"   automatic settings (rst -> wiki) or add aliases (cfg -> confg)
+" - NB: using python to search voom_vimplugin2657's namespace will only find
+"   our user/private module since voom's package is not on sys.path (yet).
+" TODO:
+" o add  a Voom outline mode for HLP files (eg for pydoc csv)
+"
+" Note: g:VIMDIR needs to be set inside init.vim, NOT inside the function!
+" See https://superuser.com/questions/119991/how-do-i-get-vim-home-directory
+" We'll pick up any voom_mode_<mmode>.py under repos, of any plugin therein.
 let g:VIMDIR = expand('<sfile>:p:h')  " this scripts directory
 
 function! MyVoomFiletypes() abort
-  let repos = globpath(g:VIMDIR, '/plugged/**/voom_mode_*.py', 0, 1)
+  let repos = globpath(g:VIMDIR, '/repos/**/voom_mode_*.py', 0, 1)
   call map(repos, {k,v -> fnamemodify(v,':t')})  " keep tail (filename)
   call map(repos, {k,v -> split(v, '[._]')[2]})  " keep mod's markupmode (*)
   let pylib = globpath(g:VIMDIR, '/pylib/**/voom_mode_*.py', 0, 1)
@@ -120,12 +116,32 @@ augroup filetypedetect
   au BufNewFile,BufRead *.csv set ft=csv
 augroup END
 
+" TAGBAR: {{{3
+call dein#add('majutsushi/tagbar')           " navigate source code
+" TGPG_VIM: {{{3
+call dein#add('tomtom/tgpg_vim.git')         " used in pw <vault>
 
 " CODING: {{{2
 " TODO: start additional paths with ,?
 set path+=,./include,/usr/include/linux
 set path+=,/usr/include/x86_64-linux-gnu,/usr/local/include
 
+" NEOMAKE: {{{3
+call dein#add('neomake/neomake')             " async run makers/linters
+" NEOFORMAT: {{{3
+call dein#add('sbdchd/neoformat')            " requires formatters
+" VIM_ENDWISE: {{{3
+call dein#add('tpope/vim-endwise')           " auto-end structures
+" VIM_CLOSER: {{{3
+call dein#add('rstacruz/vim-closer')         " autoclose code constructs
+" VIM_MATCHUP: {{{3
+call dein#add('andymass/vim-matchup')        " jump around
+" DIALK: {{{3
+call dein#add('hertogp/dialk')               " K for help
+
+" COMPLETTION: {{{2
+" DEOPLETE: {{{3
+call dein#add('Shougo/deoplete.nvim')
 
 " COC NVIM: {{{3
 " https://github.com/neoclide/coc.nvim
@@ -144,6 +160,9 @@ set path+=,/usr/include/x86_64-linux-gnu,/usr/local/include
 " ~/.config/coc holds extensions installed by CocInstall <extension>
 " CocInstalled: coc-html coc-css coc-json coc-tsserver coc-pyls
 
+" call dein#add('neoclide/coc.nvim', {
+"       \'build': 'yarn install'
+"       \})
 " let g:coc_snippet_next = '<c-j>'
 " let g:coc_snippet_prev = '<c-k>'
 
@@ -156,199 +175,123 @@ set signcolumn=yes
 set updatetime=300
 set cmdheight=2
 
+" goto keys
+" dont touch gf for go-file
+" :map g   to see all g-maps
+" nnoremap gi <Plug>(coc-diagnostic-info)
+" nnoremap gd <Plug>(coc-definition)
+" nnoremap gr <Plug>(coc-references)
+" nnoremap gt <Plug>(coc-type-definition)
+" nnoremap gi <Plug>(coc-implementation)
+" nnoremap [c <Plug>(coc-diagnostics-prev)
+" nnoremap ]c <Plug>(coc-diagnostics-next)
+" nnoremap gh :call CocAction('doHover')<cr>
+" nnoremap gR <Plug>(coc-rename)
 
-" VIM CONFIG: {{{1
 
-" Generic: {{{2
-" new candidates:
-set hlsearch                " highlight search results
-set autoindent              " indent a new line the same amount as the line just typed
-set wildmode=longest,list   " get bash-like tab completions
-set cc=80                   " set an 80 column border for good coding style
-set complete=.,w,b,u,t,k
+" SUPERTAB: {{{3
+call dein#add('ervandew/supertab')
+" ULTISNIPS: {{{3
+call dein#add('SirVer/ultisnips')
+" VIM_SNIPPETS: {{{3
+call dein#add('honza/vim-snippets')
+" LC_NEOVIM: {{{3
+call dein#add('autozimu/LanguageClient-neovim', {
+      \'rev': 'next',
+      \'do': 'bash install.sh'
+      \})
 
-" trusted settings
-let mapleader='\'            " its the default, use it as map <leader> ...
-set nocompatible             " no vi compatible, this first! for side-effects
-" set nowrap                   " don't wrap long lines to fit screen
-set whichwrap=b,s,<,>,[,]    " [back]space, <left>,<right> all wrap
-set sidescroll=10            " ensure some context when scrolling
-set backspace=indent,eol,start  " backspace over these in insert mode
-set smartindent              " autoindent new lines, for c-like programs 
-set shiftwidth=2             " indent by 2 spaces
-set tabstop=2                " dito
-set softtabstop=2            " dito
-set expandtab                " use spaces, for tab press ctl-V<tab>
-set history=50               " prevent large viminfo files
-set textwidth=79             " will be overriden for specific file types
-set formatoptions=tcrqn2j
-set mouse=a                  " enable mouse in most modes
-set history=50               " keep 50 lines of command line history
-set number                   " show line numbers
-set numberwidth=4            " line number column width
-set ruler                    " show the cursor position all the time
-set showcmd                  " display incomplete commands
-set noshowmode               " current mode already display in statusline
-set incsearch                " do incremental searching
-set laststatus=2             " last window always has a status line
-set showmatch                " Show matching brackets.
-set ignorecase               " case insensitive matching
-set smartcase                " unless if there's a Capital letter
-set autowrite                " autosave before commands like :next and :make
-set hidden                   " hide buffers when they are abandoned
-set wildmenu                 " show cmd autocompletion in statusline
-set lazyredraw               " don't redraw during macro execution
-"set completeopt+=longest
+let js_opts = {'on_ft': ['javascript', 'javascript.jsx']}
 
-" Clipboard: sudo apt install xsel -> enables copy/paste from system clipboard
-set clipboard=unnamed        " register * for yanking
-set clipboard+=unnamedplus   " register + for all y,d,c & p ops
-set list                     " show listchars for more visibility of stuff
-set listchars=tab:·\ ,trail:-,precedes:<,extends:>  "show tabs, U+00B7 
-nnoremap <F6> :set list!<CR>
-set splitright               " new vsplit window to the right of curr window
-" set fillchars=vert:|        " vertical window-split character (doesnt work?)
+" JSPC: {{{3
+call dein#add('othree/jspc.vim', js_opts)
+let js_opts = {
+      \'on_ft': ['javascript', 'javascript.jsx'],
+      \'build': 'npm install'}
 
-" softtabstop, shiftwidth and tabstop
-au FileType vim set sts=2 sw=2 tabstop=2
-au FileType javascript set sts=2 sw=2 tabstop=2
-au FileType javascript.jsx set sts=2 sw=2 tabstop=2
-au FileType go set sts=2 sw=2 tabstop=2
+" jedi     -> https://github.com/davidhalter/jedi
+" jedi-vim -> https://github.com/davidhalter/jedi-vim
+" JEDI: {{{3
+call dein#add('davidhalter/jedi-vim', {'on_ft': 'python'}) " python
 
-" Filetypes: {{{2
-augroup vimrcEx
-au!
-autocmd FileType text setlocal textwidth=79
+" NECO_VIM: {{{3
+call dein#add('Shougo/neco-vim')
+" NEOINCLUDE: {{{3
+call dein#add('Shougo/neoinclude.vim')
+" NECO_LOOK: {{{3
+call dein#add('ujihisa/neco-look')
+" ECHODOC: {{{3
+call dein#add('Shougo/echodoc.vim')
 
-" try moving to last known cursor position upon re-editing a file
-autocmd BufReadPost *
-  \ if line("'\"") > 0 && line("'\"") <= line("$") |
-  \   exe "normal g`\"" |
-  \ endif
-augroup END
+" EDITING: {{{2
+" DENITE: {{{3
+call dein#add('Shougo/denite.nvim')          " the new unite
+" UNITE_LOC: {{{3
+call dein#add('chemzqm/unite-location')      " qfix & location list sources
+" TABULAR: {{{3
+call dein#add('https://github.com/godlygeek/tabular.git') " |-tables
 
-" EasyQuit: {{{3
-" Easy quit nofile-like windows
-" augroup QuitNoFile
-" au!
-" Notes:
-" - sometimes buftype gets set after the bufenter event
-augroup EasyQuit
-  au!
-"  au bufenter * if &buftype=='nofile'|nnoremap <buffer> q <esc>:q<cr>|endif
-" -- I seem to loose buffer when switching with :Denite buffer?
-  au FileType nofile, qf nnoremap <buffer> q <esc>:q<cr><c-w>p
-  au syntax * if &buftype=='nofile'|nnoremap <buffer> q <esc>:q<cr>|endif
-  au syntax * if &buftype=='quickfix'|nnoremap <buffer> q <esc>:q<cr>|endif
-  au syntax * if &buftype=='loclist'|nnoremap <buffer> q <esc>:q<cr>|endif
-  au syntax * if &buftype=='help'|nnoremap <buffer> q <esc>:q<cr>|endif
-  au syntax * if &syntax == 'man'|nnoremap <buffer> q <esc>:q<cr>|endif
-  au syntax * if &syntax == 'Godoc'|nnoremap <buffer> q <esc>:q<cr>|endif
-  " au syntax * if bufname('%')=='__doc__'|nnoremap <buffer> q <esc>:q<cr>|endif
-  " au syntax * if bufname('%')=='[Scratch]'|nnoremap <buffer> q <esc>:q<cr>|endif
-augroup END
+" GOLANG {{{2
+call dein#add('fatih/vim-go')
+" todo
 
-"
-" Pandoc: {{{3
-augroup auPandoc
-  au!
-  autocmd FileType pandoc set formatoptions="want"
-  " makeprg is setup via vim-pandoc's compiler
-  "   see ~/.vim/after/compiler/pandoc.vim, where a proper makeprg is set
-  "   this method does not need the ~/bin/mk.notes shell script.
-  " <F4> - to compile the current markdown buffer to pdf
-  " <S-F4> - to compile & preview the current markdown buffer in evince
-  " See help jobstart (neovim) -> arg ["cmd", "args"] -> run directly
-  autocmd FileType markdown,pandoc nnoremap <buffer><S-F4> <esc>:silent make\|redraw!\|copen<cr>
-  autocmd FileType markdown,pandoc nnoremap <buffer><F4> <esc>:silent make\|redraw!\|call jobstart(["xdg-open", expand("%:r").".pdf"])<cr>
-  autocmd FileType markdown,pandoc compiler pandoc
-augroup END
+" LUA {{{2
+" LUA_SUPPORT: {{{3
+call dein#add('wolfgangmehner/lua-support')
 
-" KEYMAPS: {{{1
-" Generic: {{{2
-" TODO
-nnoremap <f5> :redraw!<cr>
-nnoremap <f8> :echom 'pos:(' . line(".") . "," . col(".") . ")"
-    \. ' -> hi:<'
-    \. synIDattr(synID(line("."),col("."),1),"name")
-    \. '>, transparent:<'
-    \. synIDattr(synID(line("."),col("."),0),"name")
-    \. '>, local:<'
-    \. synIDattr(synIDtrans(synID(line("."),col("."),1)),"name")
-    \. '>'<CR>
+" JAVASCRIPT: {{{2
+" YAJS: {{{3
+call dein#add('othree/yajs.vim')
+" JSX: {{{3
+call dein#add('mxw/vim-jsx')
+" JSDOC: {{{3
+call dein#add('heavenshell/vim-jsdoc')
+" JSON: {{{3
+call dein#add('elzr/vim-json')
+" YATS: {{{3
+call dein#add('HerringtonDarkholme/yats.vim')
+" VISON: {{{3
+call dein#add('Quramy/vison')
 
-" Move: {{{2
-" Shift-H/L move tabs left/right
-" Ctl-jhklp move up/left/down/right/previous window
-nnoremap H :<c-u>tabprevious<cr>
-nnoremap L :<c-u>tabnext<cr>
-nnoremap <c-j> <c-w>j
-nnoremap <c-k> <c-w>k
-nnoremap <c-l> <c-w>l
-nnoremap <c-h> <c-w>h
-nnoremap <c-p> <c-w>p
-" navigate errors TODO: prefers location list over quickfix (for now)
-nnoremap <expr> <C-]> len(getloclist(0))==0 ? ':cnext<CR>z.' : ':lnext<CR>z.'
-nnoremap <expr> <C-[> len(getloclist(0))==0 ? ':cprevious<CR>z.' : ':lprevious<CR>z.'
-" Keep stuff centered while navigating
-nnoremap n nzz
-nnoremap N Nzz
-nnoremap * *zz
-nnoremap # #zz
-nnoremap g* g*zz
-nnoremap <c-o> <c-o>zz
-nnoremap <c-i> <c-i>zz
-nnoremap <c-u> <c-u>zz
-nnoremap <c-d> <c-d>zz
-nnoremap g, g,zz
-nnoremap g: g;zz
+" PYTHON: {{{2
+" Preparation:
+" % sudo -H pip3 install jedi python-language-server
 
-" Edit: {{{2
-" <c-s> to write buffer if it's been modified (ie :update instead of :write)
-" Requires the terminal to give up its claim on <c-s> via stty -ixon
-" Or use a .bashrc function to call vim which toggles this, see
-" http://vim.wikia.com/wiki/Map_Ctrl-S_to_save_current_or_new_files
+" HTML: {{{2
+" HTML5: {{{3
+call dein#add('othree/html5.vim')
+" EMMET: {{{3
+call dein#add('mattn/emmet-vim')
+" MATCH_TAG_ALWAYS: {{{3
+call dein#add('valloric/MatchTagAlways', {'on_ft': 'html'})
+" VUE: {{{3
+call dein#add('posva/vim-vue')
+" HTML_ESCAPE: {{{3
+call dein#add('skwp/vim-html-escape')
 
-" easy access to ex cmd line, ; doesn't have a normal mode mapping anyway
-nnoremap ; :
-" <c-S> is seen as <c-s>? Dunno how this happens ..
-inoremap <c-s> <esc>:update<CR>
-nnoremap <c-s> <esc>:update<CR>
-" turnoff highlighted search
-nnoremap <c-n> :nohl<CR>
-" R redo (u is undo)
-nnoremap R <c-r>
-nnoremap <leader>ev :edit $HOME/.config/nvim/init.vim<cr>
-nnoremap <leader>sv :source $HOME/.config/nvim/init.vim<cr>
-nnoremap <leader>n  :cn<cr>
-" escape to normal mode
-inoremap jj <ESC>
-" Use :W to write a file you opened with sudo (you'll need sudo rights)
-command! W  execute 'silent w !sudo tee % % > /dev/null' | :edit!
-" yank till end-of-line (like D deletes to eol)
-nnoremap Y y$
-" reformat paragraph, start at cursor. {Q to reformat whole paragraph
-nnoremap Q gq}
-" I never use macros
-" nnoremap q <nop>
+" CSS: {{{2
+" CSS3_SYNTAX: {{{3
+call dein#add('hail2u/vim-css3-syntax')
+" CSS_COLOR: {{{3
+call dein#add('ap/vim-css-color')
 
-" Alt-j as opposite of Shift-J (ie split lines instead of join lines)
-" Alt key actually maps to \033 (type sed -n l, then Alt-j -> \033j
-" so an alternate mapping could be nnoremap <esc>[033j i
-" nnoremap j i<esc>
-nnoremap <M-j> i<esc>
+" SASS: {{{2
 
-" Completion:
-" -----------
-" Use generic completion such that we can continue typing to refine the list
-" Trick comes from Practical Vim
-" Note the noremap!
-inoremap <c-p> <c-p><c-n>|" invoke keyword completion & reverto current word
-inoremap <c-n> <c-n><c-p>
+" COLORS: {{{2
+" SPACEGRAY: {{{3
+call dein#add('ajh17/Spacegray.vim.git')     " color scheme
 
-" open url even if quouted 'http://www.google.nl'
-" nnoremap ww <plug>NetrwBrowseX("<cfile>")
-let g:netrw_browsex_viewer= "xdg-open"
+" Dein AutoInstall: {{{2
+if dein#check_install()
+  call dein#install()
+  let pluginsExist=1
+endif
+
+" DEIN END: {{{2
+call dein#end()
+" call dein#recache_runtimepath()  " if a plugin is disabled or modified
+call dein#save_state()
+
 
 " PLUGINS CONFIG: {{{1
 filetype plugin indent on
@@ -356,57 +299,37 @@ syntax enable
 
 " SYSTEM: {{{2
 " PythonLib: {{{3
-python <<EOF
-#py3 <<EOF
+py3 <<EOF
 # add (n)vim's pylib to sys.path
 # no import sys -> it's already available
 from os.path import expanduser, abspath
 PYLIB = abspath(expanduser('~/.config/nvim/pylib'))
-# sys.path.append(PYLIB)
-sys.path.insert(0, PYLIB)
+sys.path.append(PYLIB)
 del expanduser, abspath
 EOF
+
+" VimFugitive:
+" VimSurround:
+" VimCommentary:
+
+" VOoM: {{{3
 
 " TagBar: {{{3
 let g:tagbar_left=1
 nnoremap <space>t :TagbarToggle<cr>
-let g:tagbar_type_elixir = {
-    \ 'ctagstype' : 'elixir',
-    \ 'kinds' : [
-        \ 'p:protocols',
-        \ 'm:modules',
-        \ 'e:exceptions',
-        \ 'y:types',
-        \ 'd:delegates',
-        \ 'f:functions',
-        \ 'c:callbacks',
-        \ 'a:macros',
-        \ 't:tests',
-        \ 'i:implementations',
-        \ 'o:operators',
-        \ 'r:records'
-    \ ],
-    \ 'sro' : '.',
-    \ 'kind2scope' : {
-        \ 'p' : 'protocol',
-        \ 'm' : 'module'
-    \ },
-    \ 'scope2kind' : {
-        \ 'protocol' : 'p',
-        \ 'module' : 'm'
-    \ },
-    \ 'sort' : 0
-\ }
-" TgpgVim: {{{3
+
+" TgpgVim:
 " the --no-use-agent is now an obsolete option, replacing it with --batch seems
 " to stop de double confirmation pop-up's I was getting.
-let g:tgpgOptions = '-q --batch --force-mdc --no-secmem-warning'
+let g:tgpgOptions = '-q --batch --force-mdc --no-secmem-warning' "{{{2
 
 
 " CODING: {{{2
+" Dein:
+nnoremap <space><F8> :call dein#recache_runtimepath()<cr>
 
-" Neomake: {{{3
-" for async linting of code
+
+" Neomake: for async linting of code
 " - F3 to run neomake manually for current filetype
 " - neomake translates pylint msgs to Error, Warnings or Information
 "    so Convention => Warning; does that for other filetypes as well
@@ -415,8 +338,7 @@ let g:tgpgOptions = '-q --batch --force-mdc --no-secmem-warning'
 " let g:neomake_logfile = expand('~/log/neomake.log')
 " let g:neomake_verbose = 3
 
-" auto-open the qf/ll list, but donot enter (2)
-let g:neomake_open_list = 2                        " use :lw or :cw to open
+let g:neomake_open_list = 1                        " use :lw or :cw to open
 let g:neomake_list_height = 20                     " lines in location window
 " default makers for <filetypes>
 let g:neomake_javascript_enabled_makers = ['eslint']
@@ -455,7 +377,9 @@ nnoremap <space><f3> :NeomakeClean!<cr>
 " nicer qf/ll-window contents
 call neomake#quickfix#enable()
 
-" Neoformat: {{{3
+
+
+" Neoformat:
 " Requires external formatters, e.g.
 " - npm -g install prettier # for js, html, css etc..
 " - sudo -H pip3 install yapf  # for python
@@ -492,7 +416,8 @@ let g:vim_json_syntax_conceal = 0
 " if syntactically incorrect, prettier won't run (ie fails)
 nnoremap ,f :Neoformat<cr>
 
-" DialK: {{{3
+" Vim Matchup:
+" DialK:
 " TODO
 " o restore <s-k> mapping to dialk, for now go with <space>k
 "   since vim-jedi insists on using <s-k>.
@@ -508,106 +433,42 @@ au FileType python set keywordprg=pydoc3
 augroup end
 
 
-
 " COMPLETION {{{2
-" SuperTab: {{{3
+" SuperTab:
 autocmd FileType javascript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
 let g:SuperTabClosePreviewOnPopupClose = 1
-let g:SuperTabCrMapping=1
-let g:SuperTabLongestHighlight=1
-let g:SuperTabCompleteCase='ignore'  " not case sensitive completion
-let g:SuperTabMappingForward = '<nul>'      " make <tab> do <c-n>
-"let g:SuperTabMappingBackward = '<s-nul>'  " won't make <s-tab> do <c-p> ?
-inoremap <expr><Esc> pumvisible() ? "\<C-e>" : "\<Esc>"
+
+" LanguageClient:
+" for denite users, some sources are available:
+" - codeAction      list ?
+" - contextMenu     list menu entries
+" - documentSymbol  list of symbols to goto
+" - references      list of references
+" - workspaceSymbol list of project symbols
+let g:LanguageClient_autoStart = 1
+let g:LanguageClient_serverCommands = {
+    \'javascript': ['javascript-typescript-stdio'],
+    \'javascript.jsx': ['javascript-typescript-stdio'],
+    \'typescript': ['javascript-typescript-stdio']
+    \}
+
+nnoremap <silent> ,h :call LanguageClient#textDocument_hover()<cr>
+nnoremap <silent> ,d :call LanguageClient#textDocument_definition()<cr>
+nnoremap <silent> ,i :call LanguageClient#textDocument_implementation()<cr>
+nnoremap <silent> ,F :call LanguageClient#textDocument_formatting()<cr>
+nnoremap <silent> ,s :Denite documentSymbol<cr>
+nnoremap <silent> ,S :Denite workspaceSymbol<cr>
+nnoremap <silent> ,r :Denite refecences<cr>
 
 
 
-" CoC: {{{3
-" Run :CocConfig to add language servers for specific languages
-set hidden
-set updatetime=300   " Smaller updatetime for CursorHold & CursorHoldI
-set shortmess+=c     " don't give |ins-completion-menu| messages.
-set signcolumn=yes   " always show signcolumns
-let g:go_doc_url = 'https://pkg.go.dev'
-" Use tab for trigger completion with characters ahead and navigate.
-" Use command ':verbose imap <tab>' to make sure tab is not mapped by other plugin.
-inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
-      \ coc#refresh()
-
-function! s:check_back_space() abort
-  let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s'
-endfunction
-
-
-" Use <c-space> to trigger completion.
-inoremap <silent><expr> <c-space> coc#refresh()
-" Use `[g` and `]g` to navigate diagnostics
-" nmap <silent> < <Plug>(coc-diagnostic-prev)
-" nmap <silent> > <Plug>(coc-diagnostic-next)
-" nnoremap > :call CocAction('diagnosticNext')<CR>z.
-" nnoremap < :call CocAction('diagnosticPrevious')<CR>z.
-
-" Remap keys for gotos
-" dont touch gf for go-file
-" :map g   to see all g-maps
-" nnoremap gi <Plug>(coc-diagnostic-info)
-" nnoremap gt <Plug>(coc-type-definition)
-" nnoremap gi <Plug>(coc-implementation)
-" nnoremap gh :call CocAction('doHover')<cr>
-nnoremap <silent> gd <Plug>(coc-definition)
-nnoremap <silent> gy <Plug>(coc-type-definition)
-nnoremap <silent> gi <Plug>(coc-implementation)
-nnoremap <silent> gr <Plug>(coc-references)
-nnoremap <silent> gl <Plug>(coc-diagnostic-prev)
-nnoremap <silent> gh <Plug>(coc-diagnostic-next)
-" Use U to show documentation in preview window
-nnoremap <silent> U :call <SID>show_documentation()<CR>
-nnoremap <silent> B :GoDocBrowser<CR>
-
-function! s:show_documentation()
-  if (index(['vim','help'], &filetype) >= 0)
-    execute 'h '.expand('<cword>')
-  else
-    call CocAction('doHover')
-  endif
-endfunction
-
-" Remap for rename current word
-nmap <leader>rn <Plug>(coc-rename)
-" Remap for format selected region
-vmap <leader>f  <Plug>(coc-format-selected)
-nmap <leader>f  <Plug>(coc-format-selected)
-" Show all diagnostics
-nnoremap <silent> <space>a  :<C-u>CocList diagnostics<cr>
-" Manage extensions
-nnoremap <silent> <space>e  :<C-u>CocList extensions<cr>
-" Show commands
-nnoremap <silent> <space>c  :<C-u>CocList commands<cr>
-" Find symbol of current document
-nnoremap <silent> <space>o  :<C-u>CocList outline<cr>
-" Search workspace symbols
-nnoremap <silent> <space>s  :<C-u>CocList -I symbols<cr>
-" Do default action for next item.
-nnoremap <silent> <space>j  :<C-u>CocNext<CR>
-" Do default action for previous item.
-nnoremap <silent> <space>k  :<C-u>CocPrev<CR>
-" Resume latest coc list
-nnoremap <silent> <space>p  :<C-u>CocListResume<CR>
-
-" disable vim-go :GoDef short cut (gd) this is handled by LanguageClient
-let g:go_def_mapping_enabled = 0
-let g:LanguageClient_serverCommand = {
-      \'vue': ['vls']
-      \}
-
-" UltiSnips: {{{3
+" UltiSnips
 let g:UltiSnipsExpandTrigger="<c-j>"
+inoremap <esc><tab> pumvisible() ? "\<c-n>" : "\<tab>"
 
-" EchoDoc: {{{3
+" EchoDoc:
 let g:echodoc_enable_at_startup=1
+
 
 " clean preview window
 function! Preview_func()
@@ -616,6 +477,13 @@ function! Preview_func()
    endif
 endfunction
 autocmd WinEnter * call Preview_func()
+
+" NecoVim:
+" NeoInclude:
+" NecoLook:
+" EchoDoc:
+
+
 
 " EDITING: {{{2
 function! s:my_cursorline()
@@ -700,7 +568,7 @@ call denite#custom#option('default', 'prompt', '>')
 " - C-O to enter normal mode: hjkl to move between candidates
 " - use <enter> to enter a directory, use q to go back (up)
 
-" Nagivation: {{{2
+" Nagivation:
 " q (w/o space) returns to previous unite buffer (e.g. prev directory)
 " <space><space> -> resume last unite buffer
 nnoremap <space><space> :Denite -resume<cr>
@@ -758,17 +626,6 @@ if exists(':Tabularize') && getline('.') =~# '^\s*|' && (getline(line('.')-1) =~
 endif
 endfunction
 
-
-" Exlixir {{{2
-let g:neomake_elixir_enabled_makers = ['credo']
-augroup Elixir
-  au!
-  autocmd BufWritePost *.exs silent :MixFormat
-  autocmd BufWritePost *.ex silent :MixFormat
-  autocmd BufWritePost * Neomake
-augroup END
-
-
 " C language {{{2
 augroup Clang
   au!
@@ -776,15 +633,7 @@ augroup Clang
   au FileType C set tw=79 sw=2 ts=2
 augroup END
 
-" GOlang {{{2
-augroup GO
-  au!
-  au FileType GO set tw=79 sw=2 ts=2
-augroup END
-
-
-
-" LUA: {{{2
+" LUA {{{2
 " https://github.com/WolfgangMehner/lua-support
 augroup Lua
 au!
@@ -799,6 +648,10 @@ augroup JS
 au!
 au FileType javascript set tw=79 sw=2 ts=2
 augroup end
+
+" VimJSX:
+" VimJSDoc:
+" VimJSON:
 
 " PYTHON: {{{2
 " pylint3 error output format string: see: https://docs.pylint.org/en/1.6.0/output.html
@@ -820,6 +673,15 @@ augroup PyMake
   au FileType python set efm=%f:%t%n:%l:%c:%m,%-G%.%#
 augroup end
 
+" JediVim:
+" disable jedi-vim completion in favor of deoplete-jedi
+" let g:jedi#completions_enabled = 0
+
+
+" HTML: {{{2
+
+" Html5:
+" Emmet:
 " use tab to complete Emmet expandable stuff
 function! s:expand_html_tab()
 " Remapping <C-y>, just doesn't cut it.
@@ -848,6 +710,75 @@ let g:user_emmet_mode='a'
 let g:user_emmet_complete_tag = 0
 let g:user_emmet_install_global = 0
 autocmd FileType html,css,scss EmmetInstall
+
+" MatchTagAlways:
+" VimVue:
+" VimHtmlEscape:
+
+
+" CSS: {{{2
+" VimCss3Syntax:
+" VimCssColor:
+
+
+" SASS: {{{2
+
+" COLORS: {{{2
+" TODO
+
+" VIM CONFIG: {{{1
+" Generic: {{{2
+" new candidates:
+set hlsearch                " highlight search results
+set autoindent              " indent a new line the same amount as the line just typed
+set wildmode=longest,list   " get bash-like tab completions
+set cc=80                   " set an 80 column border for good coding style
+set complete=.,w,b,u,t,k
+
+" trusted settings
+let mapleader='\'            " its the default, use it as map <leader> ...
+set nocompatible             " no vi compatible, this first! for side-effects
+" set nowrap                   " don't wrap long lines to fit screen
+set whichwrap=b,s,<,>,[,]    " [back]space, <left>,<right> all wrap
+set sidescroll=10            " ensure some context when scrolling
+set backspace=indent,eol,start  " backspace over these in insert mode
+set smartindent              " autoindent new lines, for c-like programs 
+set shiftwidth=4             " the python pep8 standard
+set tabstop=4                " dito
+set softtabstop=4            " dito
+set expandtab                " use spaces, for tab press ctl-V<tab>
+set history=50               " prevent large viminfo files
+set textwidth=79             " will be overriden for specific file types
+set formatoptions=tcrqn2j
+set mouse=a                  " enable mouse in most modes
+set history=50               " keep 50 lines of command line history
+set number                   " show line numbers
+set numberwidth=4            " line number column width
+set ruler                    " show the cursor position all the time
+set showcmd                  " display incomplete commands
+set noshowmode               " current mode already display in statusline
+set incsearch                " do incremental searching
+set laststatus=2             " last window always has a status line
+set showmatch                " Show matching brackets.
+set ignorecase               " case insensitive matching
+set smartcase                " unless if there's a Capital letter
+set autowrite                " autosave before commands like :next and :make
+set hidden                   " hide buffers when they are abandoned
+set wildmenu                 " show cmd autocompletion in statusline
+set lazyredraw               " don't redraw during macro execution
+
+" Clipboard: sudo apt install xsel -> enables copy/paste from system clipboard
+set clipboard=unnamed        " register * for yanking
+set clipboard+=unnamedplus   " register + for all y,d,c & p ops
+
+set list                     " show listchars for more visibility of stuff
+set listchars=tab:>~,trail:-,precedes:<,extends:>  "show tabs and stuff.
+set splitright               " new vsplit window to the right of curr window
+" set fillchars=vert:|        " vertical window-split character (doesnt work?)
+
+au FileType vim set sts=2 sw=2 tabstop=2
+au FileType javascript set sts=2 sw=2 tabstop=2
+au FileType javascript.jsx set sts=2 sw=2 tabstop=2
 
 " Colors: {{{2
 if &t_Co > 2 || has("gui_running")
@@ -933,6 +864,22 @@ function! SL_neomake() abort
   let b = neomake#statusline#QflistStatus()
   let c = [ len(a) ? 'll[' . a .']' : a, len(b) ? 'qf['.b.']' : '' ]
   return tolower(join(filter(c, 'len(v:val)'), ' '))
+
+  " let c = len(a) ? ' l[' . a .'] ' : ''
+  " let c = len(b) ? c . 'q[' . b . '] ' : c
+  " return c
+
+  " if (len(a))
+  "   let c = ' l[' . a . ']'
+  " endif
+  " if len(b)
+  "   let c = c . ' q[' . b . ']'
+  " endif
+  " return len(c) ? c .' ' : c
+
+  " let sl = sl . ' | ' . neomake#statusline#LoclistStatus() . ' | '
+  " let sl = sl . neomake#statusline#QflistStatus() . ' |'
+  " return len(sl) ? " " . sl . " " : sl
 endfunction
 
 set statusline=""                              " start out blank
@@ -956,6 +903,136 @@ set statusline+=%l:%c                          " line(Lines):column
 set statusline+=\ \ %02p%%                     " at approx. perc through the file
 set statusline+=\ \ %{&encoding}               " * file encoding
 set statusline+=\ [%{&fileformat}]
+
+" Filetypes: {{{2
+augroup vimrcEx
+au!
+autocmd FileType text setlocal textwidth=79
+
+" try moving to last known cursor position upon re-editing a file
+autocmd BufReadPost *
+  \ if line("'\"") > 0 && line("'\"") <= line("$") |
+  \   exe "normal g`\"" |
+  \ endif
+augroup END
+
+" EasyQuit: {{{3
+" Easy quit nofile-like windows
+" augroup QuitNoFile
+" au!
+" Notes:
+" - sometimes buftype gets set after the bufenter event
+augroup EasyQuit
+  au!
+"  au bufenter * if &buftype=='nofile'|nnoremap <buffer> q <esc>:q<cr>|endif
+" -- I seem to loose buffer when switching with :Denite buffer?
+  " au FileType nofile, qf nnoremap <buffer> q <esc>:q<cr><c-w>p
+  " au syntax * if &buftype=='nofile'|nnoremap <buffer> q <esc>:q<cr>|endif
+  " au syntax * if &buftype=='quickfix'|nnoremap <buffer> q <esc>:q<cr>|endif
+  " au syntax * if &buftype=='help'|nnoremap <buffer> q <esc>:q<cr>|endif
+  " au syntax * if &syntax == 'man'|nnoremap <buffer> q <esc>:q<cr>|endif
+  " au syntax * if bufname('%')=='__doc__'|nnoremap <buffer> q <esc>:q<cr>|endif
+  " au syntax * if bufname('%')=='[Scratch]'|nnoremap <buffer> q <esc>:q<cr>|endif
+augroup END
+
+"
+" Pandoc: {{{3
+augroup auPandoc
+  au!
+  autocmd FileType pandoc set formatoptions="want"
+  " makeprg is setup via vim-pandoc's compiler
+  "   see ~/.vim/after/compiler/pandoc.vim, where a proper makeprg is set
+  "   this method does not need the ~/bin/mk.notes shell script.
+  " <F4> - to compile the current markdown buffer to pdf
+  " <S-F4> - to compile & preview the current markdown buffer in evince
+  " See help jobstart (neovim) -> arg ["cmd", "args"] -> run directly
+  autocmd FileType markdown,pandoc nnoremap <buffer><S-F4> <esc>:silent make\|redraw!\|copen<cr>
+  autocmd FileType markdown,pandoc nnoremap <buffer><F4> <esc>:silent make\|redraw!\|call jobstart(["xdg-open", expand("%:r").".pdf"])<cr>
+  autocmd FileType markdown,pandoc compiler pandoc
+augroup END
+
+" KEYMAPS: {{{1
+" Generic: {{{2
+" TODO
+nnoremap <f5> :redraw!<cr>
+nnoremap <f8> :echom 'pos:(' . line(".") . "," . col(".") . ")"
+    \. ' -> hi:<'
+    \. synIDattr(synID(line("."),col("."),1),"name")
+    \. '>, transparent:<'
+    \. synIDattr(synID(line("."),col("."),0),"name")
+    \. '>, local:<'
+    \. synIDattr(synIDtrans(synID(line("."),col("."),1)),"name")
+    \. '>'<CR>
+
+" Move: {{{2
+" Shift-H/L move tabs left/right
+" Ctl-jhklp move up/left/down/right/previous window
+nnoremap H :<c-u>tabprevious<cr>
+nnoremap L :<c-u>tabnext<cr>
+nnoremap <c-j> <c-w>j
+nnoremap <c-k> <c-w>k
+nnoremap <c-l> <c-w>l
+nnoremap <c-h> <c-w>h
+nnoremap <c-p> <c-w>p
+" Keep stuff centered while navigating
+nnoremap n nzz
+nnoremap N Nzz
+nnoremap * *zz
+nnoremap # #zz
+nnoremap g* g*zz
+nnoremap <c-o> <c-o>zz
+nnoremap <c-i> <c-i>zz
+nnoremap <c-u> <c-u>zz
+nnoremap <c-d> <c-d>zz
+nnoremap g, g,zz
+nnoremap g: g;zz
+
+" Edit: {{{2
+" <c-s> to write buffer if it's been modified (ie :update instead of :write)
+" Requires the terminal to give up its claim on <c-s> via stty -ixon
+" Or use a .bashrc function to call vim which toggles this, see
+" http://vim.wikia.com/wiki/Map_Ctrl-S_to_save_current_or_new_files
+
+" easy access to ex cmd line, ; doesn't have a normal mode mapping anyway
+nnoremap ; :
+" <c-S> is seen as <c-s>? Dunno how this happens ..
+inoremap <c-s> <esc>:update<CR>
+nnoremap <c-s> <esc>:update<CR>
+" turnoff highlighted search
+nnoremap <c-n> :nohl<CR>
+" U redo (u is undo)
+nnoremap U <c-r>
+nnoremap <leader>ev :edit $HOME/.config/nvim/init.vim<cr>
+nnoremap <leader>sv :source $HOME/.config/nvim/init.vim<cr>
+nnoremap <leader>n  :cn<cr>
+" escape to normal mode
+inoremap jj <ESC>
+" Use :W to write a file you opened with sudo (you'll need sudo rights)
+command! W  execute 'silent w !sudo tee % % > /dev/null' | :edit!
+" yank till end-of-line (like D deletes to eol)
+nnoremap Y y$
+" reformat paragraph, start at cursor. {Q to reformat whole paragraph
+nnoremap Q gq}
+" I never use macros
+" nnoremap q <nop>
+
+" Alt-j as opposite of Shift-J (ie split lines instead of join lines)
+" Alt key actually maps to \033 (type sed -n l, then Alt-j -> \033j
+" so an alternate mapping could be nnoremap <esc>[033j i
+" nnoremap j i<esc>
+nnoremap <M-j> i<esc>
+
+" Completion:
+" -----------
+" Use generic completion such that we can continue typing to refine the list
+" Trick comes from Practical Vim
+" Note the noremap!
+inoremap <c-p> <c-p><c-n>|" invoke keyword completion & reverto current word
+inoremap <c-n> <c-n><c-p>
+
+" open url even if quouted 'http://www.google.nl'
+" nnoremap ww <plug>NetrwBrowseX("<cfile>")
+
 
 " MyFunctions: {{{1
 " Show: {{{2

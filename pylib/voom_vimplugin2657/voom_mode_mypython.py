@@ -27,14 +27,15 @@ def hook_makeOutline(VO, blines):
     tlines, bnodes, levels = [], [], []
     tlines_add, bnodes_add, levels_add = tlines.append, bnodes.append, levels.append
 
-    #ignore_lnums, func_lnums = get_lnums_from_tokenize(blines)
     try:
         ignore_lnums, func_lnums = get_lnums_from_tokenize(blines)
     except (IndentationError, tokenize.TokenError):
         vim.command("call voom#ErrorMsg('VOoM: EXCEPTION WHILE PARSING PYTHON OUTLINE')")
-        # DO NOT print to sys.stderr -- triggers Vim error when default stderr (no PyLog)
-        #traceback.print_exc()  --this goes to sys.stderr
-        #print traceback.format_exc() --ok but no highlighting
+
+        # DO NOT print to sys.stderr: triggers Vim error when default stderr
+        # (no PyLog) traceback.print_exc()  --this goes to sys.stderr print
+        # traceback.format_exc() --ok but no highlighting
+
         lines = traceback.format_exc().replace("'","''").split('\n')
         for ln in lines:
             vim.command("call voom#ErrorMsg('%s')" %ln)
@@ -53,7 +54,10 @@ def hook_makeOutline(VO, blines):
         bline_s = bline.strip()
         if not bline_s: continue
         if bline_s.startswith('#'):
-            # ignore comment lines consisting only of #, -, =, spaces, tabs (separators, pretty headers)
+
+            # ignore comment lines consisting only of #, -, =, spaces, tabs
+            # (separators, pretty headers)
+
             if not bline_s.lstrip('# \t-='): continue
             isComment = True
         else:
