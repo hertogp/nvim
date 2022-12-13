@@ -5,6 +5,7 @@ tmp/
 .cache/
 .git/
 repos/
+repos.old/
 
 # - transient files
 
