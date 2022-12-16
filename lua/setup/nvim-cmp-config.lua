@@ -22,17 +22,40 @@
       ['<C-Space>'] = cmp.mapping.complete(),
       ['<C-e>'] = cmp.mapping.abort(),
       -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-      ['<CR>'] = cmp.mapping.confirm({ select = true }),
-    }),
-    sources = cmp.config.sources({
+      ['<CR>'] = cmp.mapping.confirm({ select = false }),
+      ['<Tab>'] = function(fallback)
+                  if cmp.visible() then
+                    cmp.select_next_item()
+                  else
+                    fallback()
+                  end
+                end,
+      ['<S-Tab>'] = function(fallback)
+        if cmp.visible() then
+          cmp.select_prev_item()
+        else
+          fallback()
+        end
+      end,
+          }),
+    sources = {
       { name = 'nvim_lsp' },
-      -- { name = 'vsnip' }, -- For vsnip users.
-      -- { name = 'luasnip' }, -- For luasnip users.
-      { name = 'ultisnips' }, -- For ultisnips users.
-      -- { name = 'snippy' }, -- For snippy users.
-    }, {
-      { name = 'buffer' },
-    })
+      { name = 'nvim_lua' },
+      { name = 'path' },
+      { name = 'buffer', keyword_length=4},
+      { name = 'ultisnips'},
+    },
+    -- sources = cmp.config.sources({
+    --   { name = 'nvim_lsp' },
+    --   { name = 'nvim_lua' },
+    --   { name = 'path' },
+    --   -- { name = 'vsnip' }, -- For vsnip users.
+    --   -- { name = 'luasnip' }, -- For luasnip users.
+    --   { name = 'ultisnips' }, -- For ultisnips users.
+    --   -- { name = 'snippy' }, -- For snippy users.
+    -- }, {
+    --   { name = 'buffer' },
+    -- })
   })
 
   -- Set configuration for specific filetype.
@@ -70,8 +93,5 @@
     --   capabilities = capabilities
     -- }
     -- require('lspconfig')['elixirls'].setup {
-    --   capabilities = capabilities
-    -- }
-    -- require('lspconfig')['luau_lsp'].setup {
     --   capabilities = capabilities
     -- }

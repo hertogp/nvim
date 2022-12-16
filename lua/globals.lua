@@ -5,17 +5,19 @@
 -- https://neovim.io/doc/user/vim_diff.html#nvim-defaults
 
 --[[ global functions ]]
-
+--
 -- inspect a value and return it.
 P = function(value)
   print(vim.inspect(value))
   return value
 end
 
-local g=vim.g
-local o=vim.o
+local g=vim.g    -- namespace for global variables
+local go=vim.go  -- namespace for global options
+local api = vim.api
 
---[[ global name space ]]
+--[[ global variables ]]
+
 g.mapleader = "\\"
 g.netrw_browsex_viewer = "xdg-open"
 g.neomake_open_list = 2
@@ -34,6 +36,8 @@ g.jsdoc_return=0
 g.jsdoc_return_type=0
 g.vim_json_syntax_conceal = 0
 
+-- for pw <file>
+g.tgpgOptions = '-q --batch --force-mdc --no-secmem-warning'
 
 g.neoterm_default_mod = 'vert'
 -- automatically start a REPL works via the TREPLxx-commands
@@ -42,67 +46,55 @@ g.neoterm_auto_repl_cmd = 0
 g.neoterm_direct_open_repl = 1
 g.neoterm_autoscroll = 1
 
--- TODO use luasnip instead
 g.UltiSnipsExpandTrigger="<c-j>"
+-- TODO use luasnip instead
 
---[[ options name space ]]
+--[[ global options ]]
 
--- coding
--- haven't used this in a while, might need to check the order of the dirs listed
-o.path = o.path .. ',./include,/usr/include/linux,/usr/include/x86_64-linux-gnu,/usr/local/include'
+go.startofline = false
+-- are these in vim.go namespace of vim.o namespace?
+-- TODO: packpath defaults to runtimepath, so is this necessary?
+go.packpath=go.runtimepath
 
-o.signcolumn = "yes"
-o.updatetime = 300
-o.cmdheight = 2
-o.shortmess = o.shortmess .. 'c'
-o.signcolumn = "yes"
+--[[ global user commands ]]
 
-o.hlsearch = true
-o.wildmode = "longest,list:longest,full"
--- see :h E535
-o.complete =".,w,b,u,t,k"
-o.wildmenu = true
-o.lazyredraw = true
+-- Show
+-- run a vim command and show it's output, e.g.
+-- - Show let b:      -- show all buffer variables in a new tab
+-- - Show lua =vim    -- show the lua vim table
+-- - Show map         -- show all mappings
+local function show_in_tab(t)
+  -- x = vim.api.nvim_exec(t.args, x)
+  local ok, x = pcall(function()
+    local cmd = api.nvim_parse_cmd(t.args, {})
+    local output = api.nvim_cmd(cmd, {output=true})
+    -- return lines table, no newlines allowed by nvim_buf_set_lines()
+    local lines = {}
+    -- return vim.split(lines, "\r?\n", {trimempty = true}
+    for line in output:gmatch("[^\r\n]+") do
+      table.insert(lines, line)
+    end
+    return lines
+  end)
 
-o.wrap = false
-o.whichwrap = "b,s,<,>,[,]"
-o.sidescroll = 10
-o.backspace="indent,eol,start"
-o.smartindent = true
-o.shiftwidth = 2
-o.tabstop = 2
-o.softtabstop = 2
-o.expandtab=true     -- use C-v<tab> for a real tab
-o.history = 50
-o.textwidth = 79     -- some filetypes override this
-o.formatoptions = "tcrqn2j"
-o.number = true
-o.numberwidth = 4
-o.ruler = true
-o.showcmd = true
-o.showmode = false
-o.incsearch = true
-o.laststatus = 2
-o.showmatch = true
-o.ignorecase = true
-o.smartcase = true
-o.autowrite = true  -- save before commands like :next and :make
+  -- open a new tab
+  api.nvim_command('tabnew')
+  -- set filetype=nofile  so 'q' just works in normal mode
+  -- api.nvim_buf_set_option(0, 'filetype', 'nofile')
+  -- api.nvim_buf_set_option(0, 'buftype', 'nofile')
+  api.nvim_buf_set_option(0, 'bufhidden', 'wipe')
+  api.nvim_buf_set_option(0, 'swapfile', false)
+  api.nvim_buf_set_option(0, 'buflisted', false)
+  api.nvim_buf_set_lines(0, 0, 0, false, {"Show " .. t.args, "-----"})
 
-o.mouse="a"
-o.cursorline = true
--- vim.api.nvim_set_hl(0, 'CursorLine', { ctermbg = 234 })
-vim.api.nvim_set_hl(0, 'ColorColumn', { ctermbg = "DarkGrey", ctermfg = "white" })
-vim.api.nvim_set_hl(0, 'Pmenu',    { cterm={italic=true}, ctermfg='white', ctermbg='darkgrey' })
-vim.api.nvim_set_hl(0, 'PmenuSel', { cterm={italic = true}, ctermfg='white', ctermbg='darkblue' })
-vim.api.nvim_set_hl(0, 'LineNr', { ctermfg=239, ctermbg=234 })
-vim.fn.matchadd('ColorColumn', '\\%81v', 100)
+  -- insert results (good or bad) in the buffer
+  if ok then
+    api.nvim_buf_set_lines(0, -1, -1, false, x)
+  else
+     api.nvim_buf_set_lines(0, -1, -1, false, {"error", vim.inspect(x)})
+   end
 
-o.termguicolors = true
-
--- clipboard
-o.clipboard= "unnamed,unnamedplus"  -- register * for yanking, + for all y,d,c&p operations
-o.list = true
--- o.listchars = "tab:→·\\ ,trail:░,precedes:◁ ,extends:▷"
-o.listchars = "tab:→\\ ,trail:▓,precedes:◀,extends:▶"
-
-o.splitright = true
+  api.nvim_buf_set_option(0, 'modified', false)
+  api.nvim_buf_set_keymap(0, 'n', 'q', '<cmd>close<cr>', {noremap=true, silent=true})
+end
+api.nvim_create_user_command('Show', show_in_tab, {complete='shellcmd', nargs='+'})

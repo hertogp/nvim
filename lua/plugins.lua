@@ -1,84 +1,67 @@
---
---------------------------------------------------------------------------------
---         File:  plugins.lua
---
---        Usage:  ./plugins.lua
---
---  Description: Load plugins using packer 
---
---      Options:  ---
--- Requirements:  ---
---         Bugs:  ---
---        Notes:  ---
---       Author:  YOUR NAME (), <>
--- Organization:  
---      Version:  1.0
---      Created:  11-12-22
---     Revision:  ---
---------------------------------------------------------------------------------
---
-
+--  plugins.lua
 
 return require('packer').startup(function(use)
   -- Packer can manage itself
   use 'wbthomason/packer.nvim'
 
-  -- LSP
-  -- 
-  -- see ~/installs/elixir-ls
+  --[[ LSP's ]]
+  --
+  -- Elixir
+  -- see ~/.config/lsp/elixir-ls
+  --
+  -- Lua
+  -- https://github.com/sumneko/lua-language-server
+  -- see ~/.config/lsp/lua-language-server/
+  --
+  -- LSP configuration
   -- https://github.com/neovim/nvim-lspconfig
   use 'neovim/nvim-lspconfig'
 
+
   --[[ Telescope ]]
   -- alo installed  ~/installs/ripgrep and sudo apt install fd-find
-  -- https://github.com/nvim-telescope/telescope-fzf-native.nvim
-  use {
-    'nvim-telescope/telescope-fzf-native.nvim',
-    run = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build'
-  }
-
   -- https://github.com/nvim-telescope/telescope.nvim
   use {
     'nvim-telescope/telescope.nvim', tag = '0.1.0',
     requires = { {'nvim-lua/plenary.nvim'} }
   }
 
+  -- https://github.com/nvim-telescope/telescope-fzf-native.nvim
+  use {
+    'nvim-telescope/telescope-fzf-native.nvim',
+    run = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build'
+  }
+
+  -- Treesitter
   -- https://github.com/nvim-treesitter/nvim-treesitter
   -- :TSInstall <language_to_install>
   -- `-> https://github.com/nvim-treesitter/nvim-treesitter#supported-languages
   use {
     'nvim-treesitter/nvim-treesitter',
-    run = ':TSUpdate'
+    run = function()
+            local ts_update = require('nvim-treesitter.install').update({ with_sync = true })
+            ts_update()
+        end,
   }
 
-  require("telescope").setup({
-    -- in normal mode, 'q' quits telescope (see :h telescope.mappings)
-    -- this should probably move to lua/setup/telescope.lua file.
-    defaults = {
-      mappings = {
-            n = { ["q"] = "close" },
-      }
-    },
-  })
-  require"telescope".load_extension('fzf')
-
-  -- require"setup/tree-sitter"
-  require"setup.tree-sitter"
-
   -- Completion
+  -- https://github.com/folke/neodev.nvim
+  -- must be setup BEFORE lspconfig
+  use "folke/neodev.nvim"
   -- https://github.com/hrsh7th/nvim-cmp
   use {
     "hrsh7th/nvim-cmp",
     requires = {
-        "hrsh7th/cmp-buffer",
-        "hrsh7th/cmp-nvim-lsp",
-        'f3fora/cmp-spell',
-        'hrsh7th/cmp-calc',
-        'hrsh7th/cmp-emoji',
-        'hrsh7th/cmp-nvim-lua',
-        'hrsh7th/cmp-path',
-        'octaltree/cmp-look',
-        'quangnguyen30192/cmp-nvim-ultisnips'
+      -- completion sources
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-nvim-lsp",
+      'f3fora/cmp-spell',
+      'hrsh7th/cmp-calc',
+      'hrsh7th/cmp-emoji',
+      'hrsh7th/cmp-nvim-lua',
+      'hrsh7th/cmp-path',
+      'octaltree/cmp-look',
+      'quangnguyen30192/cmp-nvim-ultisnips'
     }
   }
   use {
@@ -86,7 +69,6 @@ return require('packer').startup(function(use)
       run = './install.sh',
       requires = 'hrsh7th/nvim-cmp'
   }
-  require"setup.nvim-cmp"
 
   -- colorschemes
   -- https://github.com/ackyshake/Spacegray.vim
@@ -164,7 +146,7 @@ return require('packer').startup(function(use)
 
   -- Coding
   -- https://github.com/rstacruz/vim-closer
-  -- use 'rstacruz/vim-closer'
+  use 'rstacruz/vim-closer'
 
   -- https://github.com/tpope/vim-commentary
   use 'tpope/vim-commentary'

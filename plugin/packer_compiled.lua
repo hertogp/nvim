@@ -79,6 +79,11 @@ _G.packer_plugins = {
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/Spacegray.vim",
     url = "https://github.com/ackyshake/Spacegray.vim"
   },
+  VOoM = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/VOoM",
+    url = "https://github.com/vim-voom/VOoM"
+  },
   ["cmp-buffer"] = {
     loaded = true,
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/cmp-buffer",
@@ -129,10 +134,40 @@ _G.packer_plugins = {
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/cmp-tabnine",
     url = "https://github.com/tzachar/cmp-tabnine"
   },
+  ["dracula.nvim"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/dracula.nvim",
+    url = "https://github.com/Mofiqul/dracula.nvim"
+  },
   ["gruvbox.nvim"] = {
     loaded = true,
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/gruvbox.nvim",
     url = "https://github.com/ellisonleao/gruvbox.nvim"
+  },
+  ["lua-support"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/lua-support",
+    url = "https://github.com/WolfgangMehner/lua-support"
+  },
+  ["lualine.nvim"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/lualine.nvim",
+    url = "https://github.com/nvim-lualine/lualine.nvim"
+  },
+  ["neodev.nvim"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/neodev.nvim",
+    url = "https://github.com/folke/neodev.nvim"
+  },
+  neomake = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/neomake",
+    url = "https://github.com/neomake/neomake"
+  },
+  neoterm = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/neoterm",
+    url = "https://github.com/kassio/neoterm"
   },
   ["nvim-cmp"] = {
     loaded = true,
@@ -149,6 +184,12 @@ _G.packer_plugins = {
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/nvim-treesitter",
     url = "https://github.com/nvim-treesitter/nvim-treesitter"
   },
+  ["nvim-web-devicons"] = {
+    loaded = false,
+    needs_bufread = false,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/opt/nvim-web-devicons",
+    url = "https://github.com/kyazdani42/nvim-web-devicons"
+  },
   ["packer.nvim"] = {
     loaded = true,
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/packer.nvim",
@@ -159,10 +200,10 @@ _G.packer_plugins = {
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/plenary.nvim",
     url = "https://github.com/nvim-lua/plenary.nvim"
   },
-  tagbar = {
+  ["symbols-outline.nvim"] = {
     loaded = true,
-    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/tagbar",
-    url = "https://github.com/majutsushi/tagbar"
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/symbols-outline.nvim",
+    url = "https://github.com/simrat39/symbols-outline.nvim"
   },
   ["telescope-fzf-native.nvim"] = {
     loaded = true,
@@ -174,12 +215,57 @@ _G.packer_plugins = {
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/telescope.nvim",
     url = "https://github.com/nvim-telescope/telescope.nvim"
   },
+  tgpg_vim = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/tgpg_vim",
+    url = "https://github.com/tomtom/tgpg_vim"
+  },
+  ultisnips = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/ultisnips",
+    url = "https://github.com/SirVer/ultisnips"
+  },
+  ["vim-closer"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/vim-closer",
+    url = "https://github.com/rstacruz/vim-closer"
+  },
+  ["vim-commentary"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/vim-commentary",
+    url = "https://github.com/tpope/vim-commentary"
+  },
+  ["vim-elixir"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/vim-elixir",
+    url = "https://github.com/elixir-editors/vim-elixir"
+  },
+  ["vim-endwise"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/vim-endwise",
+    url = "https://github.com/tpope/vim-endwise"
+  },
+  ["vim-fugitive"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/vim-fugitive",
+    url = "https://github.com/tpope/vim-fugitive"
+  },
   ["vim-matchup"] = {
     after_files = { "/home/pdh/.local/share/nvim/site/pack/packer/opt/vim-matchup/after/plugin/matchit.vim" },
     loaded = true,
     needs_bufread = true,
     path = "/home/pdh/.local/share/nvim/site/pack/packer/opt/vim-matchup",
     url = "https://github.com/andymass/vim-matchup"
+  },
+  ["vim-mix-format"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/vim-mix-format",
+    url = "https://github.com/mhinz/vim-mix-format"
+  },
+  ["vim-surround"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/vim-surround",
+    url = "https://github.com/tpope/vim-surround"
   },
   ["zephyr-nvim"] = {
     loaded = true,
