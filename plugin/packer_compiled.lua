@@ -129,11 +129,6 @@ _G.packer_plugins = {
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/cmp-spell",
     url = "https://github.com/f3fora/cmp-spell"
   },
-  ["cmp-tabnine"] = {
-    loaded = true,
-    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/cmp-tabnine",
-    url = "https://github.com/tzachar/cmp-tabnine"
-  },
   ["dracula.nvim"] = {
     loaded = true,
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/dracula.nvim",
@@ -244,11 +239,6 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/vim-endwise",
     url = "https://github.com/tpope/vim-endwise"
-  },
-  ["vim-fugitive"] = {
-    loaded = true,
-    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/vim-fugitive",
-    url = "https://github.com/tpope/vim-fugitive"
   },
   ["vim-matchup"] = {
     after_files = { "/home/pdh/.local/share/nvim/site/pack/packer/opt/vim-matchup/after/plugin/matchit.vim" },

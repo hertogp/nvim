@@ -79,7 +79,9 @@ nmap('<space>g', builtin.grep_string, opts)
 nmap('<space>G', builtin.live_grep, opts)
 
 -- filter lines of current buffer
-nmap('<space>l', builtin.current_buffer_fuzzy_find, opts)
+-- nmap('<space>l', builtin.current_buffer_fuzzy_find, opts)
+-- See https://github.com/nvim-telescope/telescope.nvim/issues/2192, so we use:
+nmap('<space>l', Pdh_find_in_buf, opts)
 
 -- search document SymbolsOutline
 nmap('<space>s', builtin.lsp_document_symbols, opts)

@@ -1,5 +1,4 @@
 --  plugins.lua
-
 return require('packer').startup(function(use)
   -- Packer can manage itself
   use 'wbthomason/packer.nvim'
@@ -17,14 +16,10 @@ return require('packer').startup(function(use)
   -- https://github.com/neovim/nvim-lspconfig
   use 'neovim/nvim-lspconfig'
 
-
   --[[ Telescope ]]
   -- alo installed  ~/installs/ripgrep and sudo apt install fd-find
   -- https://github.com/nvim-telescope/telescope.nvim
-  use {
-    'nvim-telescope/telescope.nvim', tag = '0.1.0',
-    requires = { {'nvim-lua/plenary.nvim'} }
-  }
+  use {'nvim-telescope/telescope.nvim', tag = '0.1.0', requires = {{'nvim-lua/plenary.nvim'}}}
 
   -- https://github.com/nvim-telescope/telescope-fzf-native.nvim
   use {
@@ -39,9 +34,9 @@ return require('packer').startup(function(use)
   use {
     'nvim-treesitter/nvim-treesitter',
     run = function()
-            local ts_update = require('nvim-treesitter.install').update({ with_sync = true })
-            ts_update()
-        end,
+      local ts_update = require('nvim-treesitter.install').update({with_sync = true})
+      ts_update()
+    end
   }
 
   -- Completion
@@ -53,22 +48,12 @@ return require('packer').startup(function(use)
     "hrsh7th/nvim-cmp",
     requires = {
       -- completion sources
-      "hrsh7th/cmp-buffer",
-      "hrsh7th/cmp-nvim-lsp",
-      'f3fora/cmp-spell',
-      'hrsh7th/cmp-calc',
-      'hrsh7th/cmp-emoji',
-      'hrsh7th/cmp-nvim-lua',
-      'hrsh7th/cmp-path',
-      'octaltree/cmp-look',
-      'quangnguyen30192/cmp-nvim-ultisnips'
+      "hrsh7th/cmp-buffer", "hrsh7th/cmp-nvim-lsp", 'f3fora/cmp-spell', 'hrsh7th/cmp-calc', 'hrsh7th/cmp-emoji', 'hrsh7th/cmp-nvim-lua',
+      'hrsh7th/cmp-path', 'octaltree/cmp-look', 'quangnguyen30192/cmp-nvim-ultisnips'
     }
   }
-  use {
-      'tzachar/cmp-tabnine',
-      run = './install.sh',
-      requires = 'hrsh7th/nvim-cmp'
-  }
+  -- AI completion of some sort
+  -- use {'tzachar/cmp-tabnine', run = './install.sh', requires = 'hrsh7th/nvim-cmp'}
 
   -- colorschemes
   -- https://github.com/ackyshake/Spacegray.vim
@@ -79,10 +64,7 @@ return require('packer').startup(function(use)
 
   -- https://github.com/glepnir/zephyr-nvim
   -- use "glepnir/zephyr-nvim"
-  use({
-    'glepnir/zephyr-nvim',
-    requires = { 'nvim-treesitter/nvim-treesitter', opt = true },
-  })
+  use({'glepnir/zephyr-nvim', requires = {'nvim-treesitter/nvim-treesitter', opt = true}})
 
   -- https://github.com/Mofiqul/dracula.nvim
   use 'Mofiqul/dracula.nvim'
@@ -91,31 +73,27 @@ return require('packer').startup(function(use)
   use 'nvim-lua/plenary.nvim'
 
   -- https://github.com/nvim-telescope/telescope.nvim
- use {
-  'nvim-telescope/telescope.nvim', tag = '0.1.0',
-  requires = { {'nvim-lua/plenary.nvim'} }
- }
+  use {'nvim-telescope/telescope.nvim', tag = '0.1.0', requires = {{'nvim-lua/plenary.nvim'}}}
 
- --[[ Languages ]]
+  --[[ Languages ]]
 
- -- Lua
- -- https://github.com/WolfgangMehner/lua-support
- use 'WolfgangMehner/lua-support'
+  -- Lua
+  -- https://github.com/WolfgangMehner/lua-support
+  use 'WolfgangMehner/lua-support'
 
- -- Elixir
- use 'elixir-editors/vim-elixir'
- use 'mhinz/vim-mix-format'
+  -- Elixir
+  use 'elixir-editors/vim-elixir'
+  use 'mhinz/vim-mix-format'
 
- --[[ Terminal ]]
- use 'kassio/neoterm'
+  --[[ Terminal ]]
+  use 'kassio/neoterm'
 
-
- -- https://github.com/andymass/vim-matchup
- use {
+  -- https://github.com/andymass/vim-matchup
+  use {
     'andymass/vim-matchup',
     setup = function()
       -- may set any options here
-      vim.g.matchup_matchparen_offscreen = { method = "popup" }
+      vim.g.matchup_matchparen_offscreen = {method = "popup"}
     end
   }
   -- JSON
@@ -135,9 +113,8 @@ return require('packer').startup(function(use)
   -- Make
   -- https://github.com/neomake/neomake
   use 'neomake/neomake'
-  --https://github.com/sbdchd/neoformat
-  --use 'sbdchd/neoformat'
-
+  -- https://github.com/sbdchd/neoformat
+  -- use 'sbdchd/neoformat'
 
   -- Code Navigation
   -- https://github.com/preservim/tagbar -- old
@@ -147,13 +124,12 @@ return require('packer').startup(function(use)
   -- Coding
   -- https://github.com/rstacruz/vim-closer
   use 'rstacruz/vim-closer'
-
   -- https://github.com/tpope/vim-commentary
   use 'tpope/vim-commentary'
   -- https://github.com/tpope/vim-endwise
   use 'tpope/vim-endwise'
   -- https://github.com/tpope/vim-fugitive
-  use 'tpope/vim-fugitive'
+  -- use 'tpope/vim-fugitive'
   -- https://github.com/tpope/vim-surround
   use 'tpope/vim-surround'
 
@@ -168,8 +144,5 @@ return require('packer').startup(function(use)
   use 'simrat39/symbols-outline.nvim'
 
   -- https://github.com/nvim-lualine/lualine.nvim
-  use {
-    'nvim-lualine/lualine.nvim',
-    requires = { 'kyazdani42/nvim-web-devicons', opt = true }
-  }
+  use {'nvim-lualine/lualine.nvim', requires = {'kyazdani42/nvim-web-devicons', opt = true}}
 end)
