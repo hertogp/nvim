@@ -1,0 +1,9 @@
+local ls = require "luasnip"
+snippet = ls.snippet
+ls = require "luasnip"
+fmt = require("luasnip.extras.fmt").fmt
+rep = require("luasnip.extras").rep
+i = ls.i
+t = ls.text_node
+c = ls.choice_node
+f = ls.function_node

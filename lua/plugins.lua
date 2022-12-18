@@ -1,7 +1,7 @@
 --  plugins.lua
-return require('packer').startup(function(use)
+return require("packer").startup(function(use)
   -- Packer can manage itself
-  use 'wbthomason/packer.nvim'
+  use "wbthomason/packer.nvim"
 
   --[[ LSP's ]]
   --
@@ -14,17 +14,18 @@ return require('packer').startup(function(use)
   --
   -- LSP configuration
   -- https://github.com/neovim/nvim-lspconfig
-  use 'neovim/nvim-lspconfig'
+  use "neovim/nvim-lspconfig"
 
   --[[ Telescope ]]
   -- alo installed  ~/installs/ripgrep and sudo apt install fd-find
   -- https://github.com/nvim-telescope/telescope.nvim
-  use {'nvim-telescope/telescope.nvim', tag = '0.1.0', requires = {{'nvim-lua/plenary.nvim'}}}
+  -- https://github.com/nvim-telescope/telescope.nvim
+  use { "nvim-telescope/telescope.nvim", tag = "0.1.0", requires = { { "nvim-lua/plenary.nvim" } } }
 
   -- https://github.com/nvim-telescope/telescope-fzf-native.nvim
   use {
-    'nvim-telescope/telescope-fzf-native.nvim',
-    run = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build'
+    "nvim-telescope/telescope-fzf-native.nvim",
+    run = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
   }
 
   -- Treesitter
@@ -32,11 +33,11 @@ return require('packer').startup(function(use)
   -- :TSInstall <language_to_install>
   -- `-> https://github.com/nvim-treesitter/nvim-treesitter#supported-languages
   use {
-    'nvim-treesitter/nvim-treesitter',
+    "nvim-treesitter/nvim-treesitter",
     run = function()
-      local ts_update = require('nvim-treesitter.install').update({with_sync = true})
+      local ts_update = require("nvim-treesitter.install").update { with_sync = true }
       ts_update()
-    end
+    end,
   }
 
   -- Completion
@@ -48,53 +49,60 @@ return require('packer').startup(function(use)
     "hrsh7th/nvim-cmp",
     requires = {
       -- completion sources
-      "hrsh7th/cmp-buffer", "hrsh7th/cmp-nvim-lsp", 'f3fora/cmp-spell', 'hrsh7th/cmp-calc', 'hrsh7th/cmp-emoji', 'hrsh7th/cmp-nvim-lua',
-      'hrsh7th/cmp-path', 'octaltree/cmp-look', 'quangnguyen30192/cmp-nvim-ultisnips'
-    }
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-nvim-lsp",
+      "f3fora/cmp-spell",
+      "hrsh7th/cmp-calc",
+      "hrsh7th/cmp-emoji",
+      "hrsh7th/cmp-nvim-lua",
+      "hrsh7th/cmp-path",
+      "octaltree/cmp-look",
+      "L3MON4D3/LuaSnip",
+      "saadparwaiz1/cmp_luasnip",
+    },
   }
   -- AI completion of some sort
   -- use {'tzachar/cmp-tabnine', run = './install.sh', requires = 'hrsh7th/nvim-cmp'}
 
   -- colorschemes
   -- https://github.com/ackyshake/Spacegray.vim
-  use 'ackyshake/Spacegray.vim'
+  use "ackyshake/Spacegray.vim"
 
   -- https://github.com/ellisonleao/gruvbox.nvim
-  use 'ellisonleao/gruvbox.nvim'
+  use "ellisonleao/gruvbox.nvim"
 
   -- https://github.com/glepnir/zephyr-nvim
   -- use "glepnir/zephyr-nvim"
-  use({'glepnir/zephyr-nvim', requires = {'nvim-treesitter/nvim-treesitter', opt = true}})
+  use { "glepnir/zephyr-nvim", requires = { "nvim-treesitter/nvim-treesitter", opt = true } }
 
   -- https://github.com/Mofiqul/dracula.nvim
-  use 'Mofiqul/dracula.nvim'
+  use "Mofiqul/dracula.nvim"
 
   -- https://github.com/nvim-lua/plenary.nvim
-  use 'nvim-lua/plenary.nvim'
-
-  -- https://github.com/nvim-telescope/telescope.nvim
-  use {'nvim-telescope/telescope.nvim', tag = '0.1.0', requires = {{'nvim-lua/plenary.nvim'}}}
+  use "nvim-lua/plenary.nvim"
 
   --[[ Languages ]]
 
   -- Lua
   -- https://github.com/WolfgangMehner/lua-support
-  use 'WolfgangMehner/lua-support'
+  use "WolfgangMehner/lua-support"
+  -- https://github.com/wesleimp/stylua.nvim
+  use { "wesleimp/stylua.nvim" }
 
   -- Elixir
-  use 'elixir-editors/vim-elixir'
-  use 'mhinz/vim-mix-format'
+  use "elixir-editors/vim-elixir"
+  use "mhinz/vim-mix-format"
 
   --[[ Terminal ]]
-  use 'kassio/neoterm'
+  use "kassio/neoterm"
 
   -- https://github.com/andymass/vim-matchup
   use {
-    'andymass/vim-matchup',
+    "andymass/vim-matchup",
     setup = function()
       -- may set any options here
-      vim.g.matchup_matchparen_offscreen = {method = "popup"}
-    end
+      vim.g.matchup_matchparen_offscreen = { method = "popup" }
+    end,
   }
   -- JSON
   -- https://github.com/Quramy/vison
@@ -104,15 +112,15 @@ return require('packer').startup(function(use)
 
   -- Snippets
   -- https://github.com/SirVer/ultisnips -- old
-  use 'SirVer/ultisnips' -- old
+  -- use 'SirVer/ultisnips' -- old
 
   -- Snippets Lua style
   -- https://github.com/L3MON4D3/LuaSnip
-  -- use "L3MON4D3/LuaSnip"
+  use "L3MON4D3/LuaSnip"
 
   -- Make
   -- https://github.com/neomake/neomake
-  use 'neomake/neomake'
+  use "neomake/neomake"
   -- https://github.com/sbdchd/neoformat
   -- use 'sbdchd/neoformat'
 
@@ -123,26 +131,26 @@ return require('packer').startup(function(use)
 
   -- Coding
   -- https://github.com/rstacruz/vim-closer
-  use 'rstacruz/vim-closer'
+  use "rstacruz/vim-closer"
   -- https://github.com/tpope/vim-commentary
-  use 'tpope/vim-commentary'
+  use "tpope/vim-commentary"
   -- https://github.com/tpope/vim-endwise
-  use 'tpope/vim-endwise'
+  use "tpope/vim-endwise"
   -- https://github.com/tpope/vim-fugitive
   -- use 'tpope/vim-fugitive'
   -- https://github.com/tpope/vim-surround
-  use 'tpope/vim-surround'
+  use "tpope/vim-surround"
 
   -- https://github.com/tomtom/tgpg_vim
-  use 'tomtom/tgpg_vim'
+  use "tomtom/tgpg_vim"
 
   -- Outliners
   -- https://github.com/vim-scripts/VOOM
-  use 'vim-voom/VOoM'
+  use "vim-voom/VOoM"
 
   -- https://github.com/simrat39/symbols-outline.nvim
-  use 'simrat39/symbols-outline.nvim'
+  use "simrat39/symbols-outline.nvim"
 
   -- https://github.com/nvim-lualine/lualine.nvim
-  use {'nvim-lualine/lualine.nvim', requires = {'kyazdani42/nvim-web-devicons', opt = true}}
+  use { "nvim-lualine/lualine.nvim", requires = { "kyazdani42/nvim-web-devicons", opt = true } }
 end)

@@ -28,6 +28,31 @@ nmap('<space><f2>', '<cmd>NeomakeClean<cr>', opts)
 nmap('<f3>', '<cmd>Neomake! makeprg<cr>', opts)
 nmap('<space><f3>', '<cmd>NeomakeClean!<cr>', opts)
 
+-- snippits, use Ctrl-Space
+local ls = require "luasnip"
+-- move forward in snippet
+vim.keymap.set({'i', 's'}, '<c-j>', function()
+  if ls.expand_or_jumpable() then
+    ls.expand_or_jump()
+  end
+end, opts)
+-- if you need a digraph, simply do :Show digraphs en copy the char
+-- with Ctrl-V,y and get something like →
+-- move backwards in snippet
+vim.keymap.set({'i', 's'}, '<c-k>', function()
+  if ls.jumpable(-1) then
+    ls.jump(-1)
+  end
+end, opts)
+-- select within a list of options
+vim.keymap.set({'i', 's'}, '<c-l>', function()
+  if ls.choice_active() then
+    ls.change_choice(1)
+  end
+end, opts)
+-- reload snippets
+nmap('<leader>ss', '<cmd>lua require"luasnip.loaders.from_lua".load()<cr>', opts)
+
 -- keep centered when jumping
 nmap('<c-n>', '<cmd>nohl<cr>', opts)
 nmap('n', 'nzz', opts)
@@ -82,6 +107,10 @@ nmap('<space>G', builtin.live_grep, opts)
 -- nmap('<space>l', builtin.current_buffer_fuzzy_find, opts)
 -- See https://github.com/nvim-telescope/telescope.nvim/issues/2192, so we use:
 nmap('<space>l', Pdh_find_in_buf, opts)
+nmap('<space>L', function()
+  -- You can pass additional configuration to telescope to change theme, layout, etc.
+  require('telescope.builtin').current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {winblend = 10, previewer = false})
+end, {desc = '[/] Fuzzily search in current buffer]'})
 
 -- search document SymbolsOutline
 nmap('<space>s', builtin.lsp_document_symbols, opts)

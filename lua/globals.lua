@@ -68,7 +68,9 @@ local function show_in_tab(t)
     -- return lines table, no newlines allowed by nvim_buf_set_lines()
     local lines = {}
     -- return vim.split(lines, "\r?\n", {trimempty = true}
-    for line in output:gmatch("[^\r\n]+") do table.insert(lines, line) end
+    for line in output:gmatch("[^\r\n]+") do
+      table.insert(lines, line)
+    end
     return lines
   end)
 
@@ -99,6 +101,7 @@ api.nvim_create_user_command('Show', show_in_tab, {complete = 'shellcmd', nargs 
 -- tmp replacement until :Telescope current_buffer_fuzzy_find is fixed,
 -- at the moment (2022-12-16) it chokes on tree-sitter's syntax highlighter
 -- object, see: #2192 -> https://github.com/nvim-telescope/telescope.nvim/issues/2192
+-- the function is mapped to <space>l in keymappings.lua
 local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
 local conf = require("telescope.config").values
@@ -110,8 +113,8 @@ function Pdh_find_in_buf(opts)
   local max = vim.api.nvim_buf_line_count(0)
   local lines = vim.api.nvim_buf_get_lines(0, 0, max, false)
   opts = opts or {}
-  pickers.new(opts, {
-    prompt_title = "find in buffer",
+  pickers.new({sorting_strategy = "ascending"}, {
+    prompt_title = "fuzzy find in buffer",
     finder = finders.new_table {results = lines},
     sorter = conf.generic_sorter(opts),
 
