@@ -150,11 +150,6 @@ _G.packer_plugins = {
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/gruvbox.nvim",
     url = "https://github.com/ellisonleao/gruvbox.nvim"
   },
-  ["lua-support"] = {
-    loaded = true,
-    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/lua-support",
-    url = "https://github.com/WolfgangMehner/lua-support"
-  },
   ["lualine.nvim"] = {
     loaded = true,
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/lualine.nvim",

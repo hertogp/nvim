@@ -104,5 +104,9 @@ local function show_in_tab(t)
   api.nvim_buf_set_keymap(0, "n", "q", "<cmd>close<cr>", { noremap = true, silent = true })
 end
 
-api.nvim_create_user_command("Show", show_in_tab, { complete = "shellcmd", nargs = "+" })
+api.nvim_create_user_command(
+  "Show",
+  show_in_tab,
+  { complete = "shellcmd", nargs = "+", desc = "Show cmd output in a new tab" }
+)
 -- api.nvim_create_user_command("Todo", "lua require'pdh.telescope'.grep(nargs=*)", {})

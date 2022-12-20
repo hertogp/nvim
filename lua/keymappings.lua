@@ -65,6 +65,7 @@ nmap("#", "#zz", opts)
 -- :jumps shows the window's jump list
 nmap("<c-o>", "<c-o>zz", opts) -- jumps to entry above current
 nmap("<c-i>", "<c-i>zz", opts) -- jumps to entry below current
+-- keep cursor centered when scrolling
 nmap("<c-u>", "<c-u>zz", opts) -- :h CTRL-u -> scroll window upward
 nmap("<c-d>", "<c-d>zz", opts) -- scroll window downard
 

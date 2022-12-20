@@ -94,7 +94,7 @@ return require("packer").startup(function(use)
 
   -- Lua
   -- https://github.com/WolfgangMehner/lua-support
-  use "WolfgangMehner/lua-support"
+  -- use "WolfgangMehner/lua-support"
   -- https://github.com/wesleimp/stylua.nvim
   use { "wesleimp/stylua.nvim" }
 
