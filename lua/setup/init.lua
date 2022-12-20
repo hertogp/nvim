@@ -9,10 +9,11 @@ for file in vim.fs.dir "~/.config/nvim/lua/setup" do
 end
 
 --[[ manual method ]]
--- require "setup.lsp-config"
--- require "setup.symbols-outline-config"
--- require "setup.lualine-config"
--- require "setup.telescope-config"
--- require "setup.tree-sitter-config"
--- require "setup.nvim-cmp-config"
--- require "setup.luasnip-config"
+-- require "setup.lsp-setup"
+-- require "setup.symbols-outline-setup"
+-- require "setup.lualine-setup"
+-- require "setup.telescope-setup"
+-- require "setup.tree-sitter-setup"
+-- require "setup.nvim-cmp-setup"
+-- require "setup.luasnip-setup"
+-- etc...

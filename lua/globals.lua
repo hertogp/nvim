@@ -1,11 +1,23 @@
 -- lua/globals.lua
---[[ :h vim_diff ]] -- https://neovim.io/doc/user/vim_diff.html
+--[[ :h vim_diff ]]
+-- https://neovim.io/doc/user/vim_diff.html
 -- https://neovim.io/doc/user/vim_diff.html#nvim-defaults
---[[ global functions ]] --
+--[[ global functions ]]
+--
 -- inspect a value and return it.
 P = function(value)
   print(vim.inspect(value))
   return value
+end
+
+RELOAD = function(...)
+  return require("plenary.reload").reload_module(...)
+end
+
+-- force a reload for given module name
+R = function(name)
+  RELOAD(name)
+  return require(name)
 end
 
 local g = vim.g -- namespace for global variables
@@ -18,11 +30,11 @@ g.mapleader = "\\"
 g.netrw_browsex_viewer = "xdg-open"
 g.neomake_open_list = 2
 g.neomake_list_height = 20
-g.neomake_javascript_enabled_makers = {'eslint'}
-g.neomake_scss_enabeld_makers = {'stylelint'}
-g.neomake_python_pylint_exe = 'pylint3'
-g.neomake_python_enabled_makers = {'pylint', 'flake8'}
-g.neomake_elixir_enabled_makers = {'credo'}
+g.neomake_javascript_enabled_makers = { "eslint" }
+g.neomake_scss_enabeld_makers = { "stylelint" }
+g.neomake_python_pylint_exe = "pylint3"
+g.neomake_python_enabled_makers = { "pylint", "flake8" }
+g.neomake_elixir_enabled_makers = { "credo" }
 
 g.jsx_ext_required = 0
 g.jsx_ext_required = 1
@@ -33,17 +45,14 @@ g.jsdoc_return_type = 0
 g.vim_json_syntax_conceal = 0
 
 -- for pw <file>
-g.tgpgOptions = '-q --batch --force-mdc --no-secmem-warning'
+g.tgpgOptions = "-q --batch --force-mdc --no-secmem-warning"
 
-g.neoterm_default_mod = 'vert'
+g.neoterm_default_mod = "vert"
 -- automatically start a REPL works via the TREPLxx-commands
 -- or use Topen iex -S mix
 g.neoterm_auto_repl_cmd = 0
 g.neoterm_direct_open_repl = 1
 g.neoterm_autoscroll = 1
-
-g.UltiSnipsExpandTrigger = "<c-j>"
--- TODO use luasnip instead
 
 --[[ global options ]]
 
@@ -64,73 +73,36 @@ local function show_in_tab(t)
   -- x = vim.api.nvim_exec(t.args, x)
   local ok, x = pcall(function()
     local cmd = api.nvim_parse_cmd(t.args, {})
-    local output = api.nvim_cmd(cmd, {output = true})
+    local output = api.nvim_cmd(cmd, { output = true })
     -- return lines table, no newlines allowed by nvim_buf_set_lines()
     local lines = {}
     -- return vim.split(lines, "\r?\n", {trimempty = true}
-    for line in output:gmatch("[^\r\n]+") do
+    for line in output:gmatch "[^\r\n]+" do
       table.insert(lines, line)
     end
     return lines
   end)
 
   -- open a new tab
-  api.nvim_command('tabnew')
+  api.nvim_command "tabnew"
   -- set filetype=nofile  so 'q' just works in normal mode
   -- api.nvim_buf_set_option(0, 'filetype', 'nofile')
   -- api.nvim_buf_set_option(0, 'buftype', 'nofile')
-  api.nvim_buf_set_option(0, 'bufhidden', 'wipe')
-  api.nvim_buf_set_option(0, 'swapfile', false)
-  api.nvim_buf_set_option(0, 'buflisted', false)
-  api.nvim_buf_set_lines(0, 0, 0, false, {"Show " .. t.args, "-----"})
+  api.nvim_buf_set_option(0, "bufhidden", "wipe")
+  api.nvim_buf_set_option(0, "swapfile", false)
+  api.nvim_buf_set_option(0, "buflisted", false)
+  api.nvim_buf_set_lines(0, 0, 0, false, { "Show " .. t.args, "-----" })
 
   -- insert results (good or bad) in the buffer
   if ok then
     api.nvim_buf_set_lines(0, -1, -1, false, x)
   else
-    api.nvim_buf_set_lines(0, -1, -1, false, {"error", vim.inspect(x)})
+    api.nvim_buf_set_lines(0, -1, -1, false, { "error", vim.inspect(x) })
   end
 
-  api.nvim_buf_set_option(0, 'modified', false)
-  api.nvim_buf_set_keymap(0, 'n', 'q', '<cmd>close<cr>', {noremap = true, silent = true})
+  api.nvim_buf_set_option(0, "modified", false)
+  api.nvim_buf_set_keymap(0, "n", "q", "<cmd>close<cr>", { noremap = true, silent = true })
 end
 
-api.nvim_create_user_command('Show', show_in_tab, {complete = 'shellcmd', nargs = '+'})
-
---[[ Find in Buffer]]
--- tmp replacement until :Telescope current_buffer_fuzzy_find is fixed,
--- at the moment (2022-12-16) it chokes on tree-sitter's syntax highlighter
--- object, see: #2192 -> https://github.com/nvim-telescope/telescope.nvim/issues/2192
--- the function is mapped to <space>l in keymappings.lua
-local pickers = require "telescope.pickers"
-local finders = require "telescope.finders"
-local conf = require("telescope.config").values
-local actions = require "telescope.actions"
-local action_state = require "telescope.actions.state"
-
--- our picker function: colors
-function Pdh_find_in_buf(opts)
-  local max = vim.api.nvim_buf_line_count(0)
-  local lines = vim.api.nvim_buf_get_lines(0, 0, max, false)
-  opts = opts or {}
-  pickers.new({sorting_strategy = "ascending"}, {
-    prompt_title = "fuzzy find in buffer",
-    finder = finders.new_table {results = lines},
-    sorter = conf.generic_sorter(opts),
-
-    attach_mappings = function(prompt_bufnr, map)
-      actions.select_default:replace(function()
-        actions.close(prompt_bufnr)
-        local selection = action_state.get_selected_entry()
-        -- print(vim.inspect(selection))
-        -- vim.api.nvim_put({selection[1]}, "", false, true)
-        if selection then
-          vim.api.nvim_win_set_cursor(0, {selection.index, 0})
-        else
-          print("nothing selected")
-        end
-      end)
-      return true
-    end
-  }):find()
-end
+api.nvim_create_user_command("Show", show_in_tab, { complete = "shellcmd", nargs = "+" })
+-- api.nvim_create_user_command("Todo", "lua require'pdh.telescope'.grep(nargs=*)", {})

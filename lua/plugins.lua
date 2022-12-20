@@ -1,7 +1,11 @@
---  plugins.lua
+--  File: /home/pdh/.config/nvim/lua/plugins.lua
 return require("packer").startup(function(use)
   -- Packer can manage itself
   use "wbthomason/packer.nvim"
+
+  --{{ neovim docs ]]
+  use "nanotee/luv-vimdocs"
+  use "milisims/nvim-luaref"
 
   --[[ LSP's ]]
   --
@@ -17,8 +21,8 @@ return require("packer").startup(function(use)
   use "neovim/nvim-lspconfig"
 
   --[[ Telescope ]]
-  -- alo installed  ~/installs/ripgrep and sudo apt install fd-find
-  -- https://github.com/nvim-telescope/telescope.nvim
+  -- https://github.com/nvim-telescope
+  -- also installed  ~/installs/ripgrep and sudo apt install fd-find
   -- https://github.com/nvim-telescope/telescope.nvim
   use { "nvim-telescope/telescope.nvim", tag = "0.1.0", requires = { { "nvim-lua/plenary.nvim" } } }
 
@@ -28,6 +32,9 @@ return require("packer").startup(function(use)
     run = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
   }
 
+  --https://github.com/nvim-telescope/telescope-file-browser
+  -- see https://www.youtube.com/watch?v=nQIJghSU9TU&list=RDLV-InmtHhk2qM&index=5
+  use "nvim-telescope/telescope-file-browser.nvim"
   -- Treesitter
   -- https://github.com/nvim-treesitter/nvim-treesitter
   -- :TSInstall <language_to_install>
@@ -39,6 +46,8 @@ return require("packer").startup(function(use)
       ts_update()
     end,
   }
+  -- https://github.com/crispgm/telescope-heading.nvim
+  use "crispgm/telescope-heading.nvim"
 
   -- Completion
   -- https://github.com/folke/neodev.nvim
@@ -133,7 +142,14 @@ return require("packer").startup(function(use)
   -- https://github.com/rstacruz/vim-closer
   use "rstacruz/vim-closer"
   -- https://github.com/tpope/vim-commentary
-  use "tpope/vim-commentary"
+  -- use "tpope/vim-commentary"
+  -- https://github.com/numToStr/Comment.nvim
+  use {
+    "numToStr/Comment.nvim",
+    config = function()
+      require("Comment").setup()
+    end,
+  }
   -- https://github.com/tpope/vim-endwise
   use "tpope/vim-endwise"
   -- https://github.com/tpope/vim-fugitive
