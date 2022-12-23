@@ -144,10 +144,11 @@ nmap("<space>w", builtin.loclist, opts)
 -- nmap("<space>t", ':call ReplStart(expand("<cWORD>"))<cr>', opts)
 -- nmap("<space>r", ":call ReplRun()<cr>", opts)
 
+--[[ OUTLINE ]]
 -- VOoM -- hasn't been updated in years
 -- https://github.com/vim-voom/VOoM
 -- using symbolsoutline instead
-nmap("<space>v", "<cmd>SymbolsOutline<cr>", opts)
+nmap("<space>v", "<cmd>lua require'pdh.telescope'.outline()<cr>", opts)
 nmap("<space>V", "<cmd>VoomToggle<cr>", opts)
 
 --[[ leader keys ]]

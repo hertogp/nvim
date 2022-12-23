@@ -46,6 +46,9 @@ return require("packer").startup(function(use)
       ts_update()
     end,
   }
+  -- https://github.com/nvim-treesitter/playground
+  use "nvim-treesitter/playground"
+
   -- https://github.com/crispgm/telescope-heading.nvim
   use "crispgm/telescope-heading.nvim"
 

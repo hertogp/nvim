@@ -11,6 +11,10 @@ local function fileformat()
   return "[" .. vim.bo.fileformat .. "]"
 end
 
+local function bufnr()
+  return "[#" .. api.nvim_get_current_buf() .. "]"
+end
+
 local function repo()
   local bufpath = fs.dirname(api.nvim_buf_get_name(0))
   local repo_dir = fs.find(".git", { path = bufpath, upward = true })[1]
@@ -49,7 +53,7 @@ require("lualine").setup {
       { repo, icon = "→", color = { fg = "yellow" }, padding = { left = 0, right = 1 } },
       "diff",
     },
-    lualine_c = { "%m", "%F" },
+    lualine_c = { bufnr, "%m", "%F" },
     lualine_x = { "%c:%l/%L" },
     lualine_y = { "progress" },
     lualine_z = { "filetype", fileformat, encoding },

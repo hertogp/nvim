@@ -20,6 +20,22 @@ R = function(name)
   return require(name)
 end
 
+--[[ NOTES ]]
+-- vim.o     get/set buffer/window OPTIONS    :set
+-- vim.bo    get/set buffer-scoped OPTIONS    :set and :setlocal
+-- vim.wo    get/set window-scoped OPTIONS    :set (see :he vim.wo)
+-- vim.go    get/set vim global OPTIONS       :setglobal
+-- vim.g     get/set vim global var's
+-- vim.opt   special OO-interface
+-- These are equivalents
+-- 1. :set wildignore=*.o,*.a,__pycache__
+-- 2. vim.o.wildignore = '*.o,*.a,__pycache__'
+-- 3. vim.opt.wildignore = {'*.o', '*.a', '__pycache__'}
+-- you can also do set+=, like this:
+-- vim.opt.wildignore:append {'*.o', '*.a', '__pycache__'}
+-- set-= -> ..:remove {}
+-- set^= -> ..:prepend {}
+-- accessing vim.opt.xxx returns an object -> vim.opt.xxx:get() yields the value
 local g = vim.g -- namespace for global variables
 local go = vim.go -- namespace for global options
 local api = vim.api
