@@ -81,9 +81,9 @@ local outline_ft_ts_query = {
 }
 
 local outline_ft_ts_depth = {
-  markdown = 1, -- node must be child of root
-  lua = 1, -- node must be child of root
-  elixir = 2, -- node must be child of root or module-node
+  markdown = 6, -- allow 6 levels deep
+  lua = 1, -- means nodes are direcly below the root node
+  elixir = 2, -- means node must be child of root or module-node
 }
 
 local function outline_depth(node, root)

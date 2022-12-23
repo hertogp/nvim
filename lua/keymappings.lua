@@ -118,6 +118,7 @@ nmap("<space>L", function()
 end, { desc = "[/] Fuzzily search in current buffer]" })
 
 -- search document SymbolsOutline
+nmap("<space>o", "<cmd>SymbolsOutline<cr>")
 nmap("<space>s", builtin.lsp_document_symbols, opts)
 
 -- search todo, fixme and xxx's, either in local buffer or in cwd and lower
