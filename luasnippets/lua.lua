@@ -1,4 +1,4 @@
--- File:/home/pdh/.config/nvim/luasnippets/lua.lua
+-- File: ~/.config/nvim/luasnippets/lua.lua
 
 --[[ LUA SNIPPETS ]]
 
