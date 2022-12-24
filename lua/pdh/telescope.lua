@@ -55,11 +55,12 @@ local function filter_buf_lines(bufnr, words)
   return matches
 end
 
---[[ Outline helpers ]]
+--[[ OUTLINE HELPERS ]]
 -- see ~/.local/share/nvim/site/pack/packer/start/nvim-treesitter/queries
--- these queries should yield nodes directly under the root
--- however, in elixir that won't work since we want to go 2 levels deep
--- that is, module plus inside the module
+-- these queries should yield nodes at some level below the root node.
+-- See allowed depth per language in outline_ft_ts_depth table.
+-- Only captures named "head" are added (if not too deep in the tree),
+-- subcaptures like "@x" are ignored and used only to refine the query
 local outline_ft_ts_query = {
   markdown = [[
     (section (atx_heading) @head)
@@ -75,8 +76,8 @@ local outline_ft_ts_query = {
 
   elixir = [[
     ((comment) @head (#lua-match? @head "^[%s#]+%[%[[^\n]+%]%]$"))
-    (((call (identifier) @h) (#any-of? @h "defmodule" "use" "alias" "def" "defp")) @c)
-    (((unary_operator (call (identifier) @h)) @x) (#not-any-of? @h "spec" "doc" "moduledoc"))
+    (((call (identifier) @x) (#any-of? @x "defmodule" "use" "alias" "def" "defp")) @head)
+    (((unary_operator (call (identifier) @h)) @head) (#not-any-of? @h "spec" "doc" "moduledoc"))
   ]],
 }
 
@@ -113,14 +114,15 @@ local function outline_lines(bufnr)
   local root = tree[1]:root()
 
   local results = {}
-  for _, node, _ in query:iter_captures(root, 0, 0, -1) do
+  for id, node, _ in query:iter_captures(root, 0, 0, -1) do
     -- ignore 1st param (capture) id
     -- ignore 3rd param, metadata
     -- range = {start_row, start_col, end_row, end_col}
     -- local parent = node:parent()
     local depth = outline_depth(node, root)
+    local capture = query.captures[id]
 
-    if depth <= max_depth then
+    if depth <= max_depth and capture == "head" then
       local text = vim.treesitter.query.get_node_text(node, bufnr)
       local linenr = node:range() -- ignore start_col, end_row, end_col
       if type(text) == "table" then
