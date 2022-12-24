@@ -160,6 +160,26 @@ return require("packer").startup(function(use)
   -- https://github.com/tpope/vim-surround
   use "tpope/vim-surround"
 
+  --[[ DUBUGGING ]]
+  -- neovim's debug adapter protocol implementation
+  -- https://github.com/mfussenegger/nvim-dap
+  use "mfussenegger/nvim-dap"
+  -- https://github.com/rcarriga/nvim-dap-ui
+  use { "rcarriga/nvim-dap-ui", requires = { "mfussenegger/nvim-dap" } }
+  -- https://github.com/theHamsta/nvim-dap-virtual-text
+  use "theHamsta/nvim-dap-virtual-text"
+  -- https://github.com/nvim-telescope/telescope-dap.nvim
+  use "nvim-telescope/telescope-dap.nvim"
+
+  -- adapters per language
+  -- https://github.com/elixir-lsp/elixir-ls
+  -- `-> the elixir dap server (already installed)
+  -- LUA
+  -- https://github.com/jbyuki/one-small-step-for-vimkind
+  use "jbyuki/one-small-step-for-vimkind"
+  -- `-> the dap server
+  -- https://github.com/actboy168/lua-debug
+
   -- https://github.com/tomtom/tgpg_vim
   use "tomtom/tgpg_vim"
 

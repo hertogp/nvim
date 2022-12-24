@@ -155,3 +155,24 @@ nmap("<space>V", "<cmd>VoomToggle<cr>", opts)
 --[[ leader keys ]]
 nmap("<leader>ev", "<cmd>edit ~/.config/nvim/init.lua<cr>", opts)
 nmap("<leader>sv", "<cmd>source ~/.config/nvim/init.lua<cr>", opts)
+
+--[[ DEBUGGING ]]
+nmap("<F8>", "<cmd>lua require'dap'.toggle_breakpoint()<CR>", opts)
+nmap(
+  "<S-F8>",
+  "<Cmd>lua require'dap'.set_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>",
+  opts
+)
+nmap("<F9>", "<cmd>lua require'dap'.continue()<CR>", opts)
+nmap("<F10>", "<cmd>lua require'dap'.step_over()<CR>", opts)
+nmap("<S-F10>", "<cmd>lua require'dap'.step_into()<CR>", opts)
+-- F11/F12 toggle terminal stuff, so neovim won't see those.
+nmap("<S-F11>", "<cmd>lua require'dap'.step_out()<CR>", opts)
+nmap("<S-F12>", "<cmd>lua require'dap.ui.widgets'.hover()<cr>", opts)
+nmap(
+  "<Leader>lp",
+  " <Cmd>lua require'dap'.set_breakpoint(nil, nil, vim.fn.input('Log point message: '))<CR>",
+  opts
+)
+nmap("<Leader>dr", "<Cmd>lua require'dap'.repl.open()<CR>", opts)
+nmap("<Leader>dl", "<Cmd>lua require'dap'.run_last()<CR>", opts)
