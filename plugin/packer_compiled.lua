@@ -180,6 +180,21 @@ _G.packer_plugins = {
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/nvim-cmp",
     url = "https://github.com/hrsh7th/nvim-cmp"
   },
+  ["nvim-dap"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/nvim-dap",
+    url = "https://github.com/mfussenegger/nvim-dap"
+  },
+  ["nvim-dap-ui"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/nvim-dap-ui",
+    url = "https://github.com/rcarriga/nvim-dap-ui"
+  },
+  ["nvim-dap-virtual-text"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/nvim-dap-virtual-text",
+    url = "https://github.com/theHamsta/nvim-dap-virtual-text"
+  },
   ["nvim-lspconfig"] = {
     loaded = true,
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/nvim-lspconfig",
@@ -196,10 +211,14 @@ _G.packer_plugins = {
     url = "https://github.com/nvim-treesitter/nvim-treesitter"
   },
   ["nvim-web-devicons"] = {
-    loaded = false,
-    needs_bufread = false,
-    path = "/home/pdh/.local/share/nvim/site/pack/packer/opt/nvim-web-devicons",
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/nvim-web-devicons",
     url = "https://github.com/kyazdani42/nvim-web-devicons"
+  },
+  ["one-small-step-for-vimkind"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/one-small-step-for-vimkind",
+    url = "https://github.com/jbyuki/one-small-step-for-vimkind"
   },
   ["packer.nvim"] = {
     loaded = true,
@@ -225,6 +244,11 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/symbols-outline.nvim",
     url = "https://github.com/simrat39/symbols-outline.nvim"
+  },
+  ["telescope-dap.nvim"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/telescope-dap.nvim",
+    url = "https://github.com/nvim-telescope/telescope-dap.nvim"
   },
   ["telescope-file-browser.nvim"] = {
     loaded = true,
@@ -266,6 +290,11 @@ _G.packer_plugins = {
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/vim-endwise",
     url = "https://github.com/tpope/vim-endwise"
   },
+  ["vim-gruvbox8"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/vim-gruvbox8",
+    url = "https://github.com/lifepillar/vim-gruvbox8"
+  },
   ["vim-matchup"] = {
     after_files = { "/home/pdh/.local/share/nvim/site/pack/packer/opt/vim-matchup/after/plugin/matchit.vim" },
     loaded = true,
@@ -277,6 +306,11 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/vim-mix-format",
     url = "https://github.com/mhinz/vim-mix-format"
+  },
+  ["vim-nightfly-colors"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/vim-nightfly-colors",
+    url = "https://github.com/bluz71/vim-nightfly-colors"
   },
   ["vim-surround"] = {
     loaded = true,

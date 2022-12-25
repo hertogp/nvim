@@ -76,13 +76,16 @@ return require("packer").startup(function(use)
   -- AI completion of some sort
   -- use {'tzachar/cmp-tabnine', run = './install.sh', requires = 'hrsh7th/nvim-cmp'}
 
-  -- colorschemes
+  --[[ COLORS ]]
   -- https://github.com/ackyshake/Spacegray.vim
   use "ackyshake/Spacegray.vim"
 
   -- https://github.com/ellisonleao/gruvbox.nvim
   use "ellisonleao/gruvbox.nvim"
-
+  -- https://github.com/lifepillar/vim-gruvbox8
+  use "lifepillar/vim-gruvbox8"
+  -- https://github.com/bluz71/vim-nightfly-colors
+  use "bluz71/vim-nightfly-colors"
   -- https://github.com/glepnir/zephyr-nvim
   -- use "glepnir/zephyr-nvim"
   use { "glepnir/zephyr-nvim", requires = { "nvim-treesitter/nvim-treesitter", opt = true } }
@@ -189,7 +192,8 @@ return require("packer").startup(function(use)
 
   -- https://github.com/simrat39/symbols-outline.nvim
   use "simrat39/symbols-outline.nvim"
-
+  -- https://github.com/nvim-tree/nvim-web-devicons
+  use "kyazdani42/nvim-web-devicons"
   -- https://github.com/nvim-lualine/lualine.nvim
   use { "nvim-lualine/lualine.nvim", requires = { "kyazdani42/nvim-web-devicons", opt = true } }
 end)

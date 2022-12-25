@@ -4,8 +4,14 @@ vim.o.background = "dark"
 vim.o.termguicolors = true
 vim.o.t_Co = 256
 vim.o.hlsearch = true
+vim.cmd [[
+     augroup ChangeBackgroudColour
+        autocmd colorscheme * :hi normal guibg=None
+    augroup END
+]]
+vim.cmd [[hi normal guibg=None]]
 
-require'dracula'.setup({
+require("dracula").setup {
   -- customize dracula color palette
   colors = {
     -- bg = "#282A36",
@@ -48,7 +54,6 @@ require'dracula'.setup({
     -- NvimTreeIndentMarker = { link = "NonText" }, -- link to NonText highlight
     -- Nothing = {} -- clear highlight of Nothing
   },
-})
+}
 
-vim.cmd("colorscheme spacegray")
-
+vim.cmd "colorscheme spacegray"

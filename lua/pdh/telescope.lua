@@ -57,10 +57,13 @@ end
 
 --[[ OUTLINE HELPERS ]]
 -- see ~/.local/share/nvim/site/pack/packer/start/nvim-treesitter/queries
--- these queries should yield nodes at some level below the root node.
--- See allowed depth per language in outline_ft_ts_depth table.
--- Only captures named "head" are added (if not too deep in the tree),
--- subcaptures like "@x" are ignored and used only to refine the query
+-- Notes:
+-- - these queries should yield nodes at some level below the root node.
+-- - see allowed depth per language in outline_ft_ts_depth table.
+-- - only captures named "head" are added (if not too deep in the tree),
+-- - the first line of the node is added to the outline
+-- - a line is added only once by checking the linenr of the previous entry
+--   `-> because subcaptures like "@x" show up as their own captured node ...
 local outline_ft_ts_query = {
   markdown = [[
     (section (atx_heading) @head)
@@ -74,6 +77,7 @@ local outline_ft_ts_query = {
     ((variable_declaration) @head)
     ]],
 
+  -- see https://github.com/elixir-lang/tree-sitter-elixir/tree/main/queries
   elixir = [[
     ((comment) @head (#lua-match? @head "^[%s#]+%[%[[^\n]+%]%]$"))
     (((call (identifier) @x) (#any-of? @x "defmodule" "use" "alias" "def" "defp")) @head)
@@ -115,21 +119,16 @@ local function outline_lines(bufnr)
 
   local results = {}
   for id, node, _ in query:iter_captures(root, 0, 0, -1) do
-    -- ignore 1st param (capture) id
-    -- ignore 3rd param, metadata
-    -- range = {start_row, start_col, end_row, end_col}
-    -- local parent = node:parent()
     local depth = outline_depth(node, root)
     local capture = query.captures[id]
 
-    if depth <= max_depth and capture == "head" then
-      local text = vim.treesitter.query.get_node_text(node, bufnr)
-      local linenr = node:range() -- ignore start_col, end_row, end_col
-      if type(text) == "table" then
-        text = table.concat(text, "")
+    local linenr = node:range() -- ignore start_col, end_row, end_col
+    local prev_line = (results[#results] or { -1 })[1] -- use -1 when results is still empty
+    if depth <= max_depth and capture == "head" and linenr ~= prev_line then
+      local lines = vim.treesitter.query.get_node_text(node, bufnr, { concat = false })
+      if #lines > 0 then
+        results[#results + 1] = { linenr, lines[1] }
       end
-      text = vim.split(text, "\n")[1]
-      results[#results + 1] = { linenr, text }
     end
   end
   return results
@@ -190,6 +189,8 @@ local function outline_goto_selection(prompt_bufnr)
     if selection then
       local linenr = selection.value[1] + 1
       vim.api.nvim_win_set_cursor(0, { linenr, 0 })
+      vim.cmd [[normal z.]]
+      -- alternative: vim.api.nvim_feedkeys("z.", "n", false)
     else
       print "nothing selected"
     end
@@ -217,6 +218,8 @@ M.find_in_buf = function(opts)
           local selection = action_state.get_selected_entry()
           if selection then
             vim.api.nvim_win_set_cursor(0, { selection.index, 0 })
+            vim.cmd [[normal z.]]
+            -- vim.api.nvim_feedkeys("z.", "n", false)
           else
             print "nothing selected"
           end

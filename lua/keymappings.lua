@@ -97,9 +97,21 @@ nmap("<space>d", builtin.diagnostics, opts)
 -- until e gets mapped somewhere else.
 nmap("<space>e", builtin.diagnostics, opts)
 
--- find files respecting .gitignore
+-- find files respecting .gitignore, works from current working directory
 nmap("<space>f", builtin.find_files, opts)
 nmap("<space>F", ':lua require"telescope.builtin".find_files({hidden=true})<cr>', opts) -- find hidden files
+-- TODO: telescope files relative to buffer directory
+nmap(
+  "<leader>f",
+  "<cmd>lua require 'telescope.builtin'.find_files({cwd=vim.fn.expand('%:p:h')})<cr>",
+  opts
+)
+nmap(
+  "<leader>F",
+  "<cmd>lua require 'telescope.builtin'.find_files({hidden=true, cwd=vim.fn.expand('%:p:h')})<cr>",
+  opts
+)
+-- `-> expand('%:p:h') will give the buffer location in the filesystem
 
 -- grep for word under cursor (or anything if not on a word)
 nmap("<space>g", builtin.grep_string, opts)
@@ -125,7 +137,7 @@ nmap("<space>s", builtin.lsp_document_symbols, opts)
 nmap("<space>t", ':lua require"pdh.telescope".todos({buffer=true})<cr>', opts)
 nmap("<space>T", ':lua require"pdh.telescope".todos({})<cr>', opts)
 
--- show markdown outline
+-- show markdown outline oO0
 nmap("<space>m", "<cmd>Telescope heading<cr>", opts)
 -- search for man pages of all categories
 nmap("<space>M", ':lua require"telescope.builtin".man_pages({sections={"ALL"}})<cr>', opts)

@@ -59,6 +59,7 @@ g.jsdoc_input_description = 1
 g.jsdoc_return = 0
 g.jsdoc_return_type = 0
 g.vim_json_syntax_conceal = 0
+g.gruvbox_transp_bg = 1
 
 -- for pw <file>
 g.tgpgOptions = "-q --batch --force-mdc --no-secmem-warning"
