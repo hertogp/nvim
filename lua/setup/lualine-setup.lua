@@ -2,6 +2,7 @@
 -- https://github.com/nvim-lualine/lualine.nvim
 local api = vim.api
 local fs = vim.fs
+local uv = require "luv"
 
 local function encoding()
   return "[" .. vim.bo.fenc .. "]"
@@ -16,12 +17,20 @@ local function bufnr()
 end
 
 local function repo()
-  local bufpath = fs.normalize(fs.dirname(api.nvim_buf_get_name(0)))
+  -- TODO: this depends on buffer having a filename.  Fails for
+  -- scratch buffers -> need to fallback to cwd
+  local path2 = uv.cwd()
+
+  local bufpath = fs.dirname(api.nvim_buf_get_name(0))
+  if #bufpath < 1 or bufpath == "." then
+    bufpath = uv.cwd()
+  end
+  bufpath = fs.normalize(bufpath)
   local repo_dir = fs.find(".git", { path = bufpath, upward = true })[1]
   if repo_dir then
-    return "(" .. fs.basename(fs.dirname(repo_dir)) .. ")"
+    return fs.basename(fs.dirname(repo_dir))
   else
-    return "(none)"
+    return "(-)"
   end
 end
 
@@ -47,8 +56,8 @@ require("lualine").setup {
   sections = {
     lualine_a = { "mode" },
     lualine_b = {
+      { repo, icon = "", color = { fg = "yellow" }, padding = { left = 0, right = 0 } },
       { "branch", icon = "", color = { fg = "blue" }, padding = { left = 1, right = 0 } },
-      { repo, icon = "", color = { fg = "yellow" }, padding = { left = 0, right = 1 } },
       "diff",
     },
     lualine_c = { bufnr, "%m", "%F" },

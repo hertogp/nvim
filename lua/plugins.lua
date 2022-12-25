@@ -193,6 +193,7 @@ return require("packer").startup(function(use)
   -- https://github.com/simrat39/symbols-outline.nvim
   use "simrat39/symbols-outline.nvim"
   -- https://github.com/nvim-tree/nvim-web-devicons
+  -- Show lua =require"nvim-web-devicons".get_icons()  -- shows all icons
   use "kyazdani42/nvim-web-devicons"
   -- https://github.com/nvim-lualine/lualine.nvim
   use { "nvim-lualine/lualine.nvim", requires = { "kyazdani42/nvim-web-devicons", opt = true } }
