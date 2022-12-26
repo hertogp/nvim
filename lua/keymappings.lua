@@ -133,7 +133,7 @@ end, { desc = "[/] Fuzzily search in current buffer]" })
 nmap("<space>o", "<cmd>SymbolsOutline<cr>")
 nmap("<space>s", builtin.lsp_document_symbols, opts)
 
--- search todo, fixme and xxx's, either in local buffer or in cwd and lower
+-- search todo, fixme, xxx's etc.., either in local buffer or in cwd and lower
 nmap("<space>t", ':lua require"pdh.telescope".todos({buffer=true})<cr>', opts)
 nmap("<space>T", ':lua require"pdh.telescope".todos({})<cr>', opts)
 

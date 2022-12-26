@@ -249,28 +249,35 @@ M.outline = function(opts)
   end
 end
 
-M.todos2 = function(opts)
+M.todos = function(opts)
   -- see https://github.com/nvim-telescope/telescope.nvim/tree/master/lua/telescope/previewers/buffer_previewer.lua#L274
   -- line 274
   opts = opts or {}
-  local src_bufnr = vim.api.nvim_get_current_buf()
-  local words = { "TODO:", "FIXME:", "BUG:", "XXX:", "NOTES:", "INFO:" }
-  local results = filter_buf_lines(src_bufnr, words)
-  if #results == 0 then
-    vim.notify("[info] no todo's found", vim.log.levels.INFO)
+  if opts.buffer then
+    local src_bufnr = vim.api.nvim_get_current_buf()
+    local words = { "TODO:", "FIXME:", "BUG:", "XXX:", "NOTE:", "NOTES:", "INFO:" }
+    local results = filter_buf_lines(src_bufnr, words)
+    if #results == 0 then
+      vim.notify("[info] no todo's found", vim.log.levels.INFO)
+    else
+      opts.prompt_title = "Search ToDo's v2"
+      opts.preview_title = "Preview"
+      opts.attach_mappings = outline_goto_selection
+      opts.sorter = sorters.get_substr_matcher()
+      opts.finder = outline_finder(results)
+      opts.previewer = outline_previewer(src_bufnr)
+      local picker = pickers.new({ sorting_strategy = "ascending" }, opts)
+      picker:find()
+    end
   else
-    opts.prompt_title = "Search ToDo's v2"
-    opts.preview_title = "Preview"
-    opts.attach_mappings = outline_goto_selection
-    opts.sorter = sorters.get_substr_matcher()
-    opts.finder = outline_finder(results)
-    opts.previewer = outline_previewer(src_bufnr)
-    local picker = pickers.new({ sorting_strategy = "ascending" }, opts)
-    picker:find()
+    require("telescope.builtin").grep_string {
+      search = "TODO:|FIXME:|XXX:|BUG:|NOTES?:|INFO:",
+      use_regex = true,
+    }
   end
 end
 
-M.todos = function(opts)
+M.todos2 = function(opts)
   opts = opts or {}
   opts.prompt_title = "Search TODO's"
 
@@ -278,7 +285,6 @@ M.todos = function(opts)
     -- use lvimgrep and the window's location list
     local ok, _ = pcall(function()
       -- /j to not jump, leave that to closing action of telescope
-      -- NOTES: todo delme
       vim.cmd.lvimgrep([[/\C(FIXME\|TODO\|XXX\|NOTES\?\|INFO):/j]], "%")
     end)
     if ok then
