@@ -14,15 +14,58 @@ end
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
 
+--[[ MASON ]]
+-- Setup mason so it can manage external tooling
+--  Add any additional override configuration in the following tables. They will be passed to
+--  the `settings` field of the server config. You must look up that documentation yourself.
+local servers = {
+  -- clangd = {},
+  -- gopls = {},
+  -- pyright = {},
+  -- rust_analyzer = {},
+  -- tsserver = {},
+
+  sumneko_lua = {
+    Lua = {
+      diagnostics = { globals = { "vim", "use" } },
+      workspace = { checkThirdParty = false },
+      telemetry = { enable = false },
+    },
+  },
+}
+
+require("mason").setup()
+
+-- Ensure the servers above are installed
+local mason_lspconfig = require "mason-lspconfig"
+
+mason_lspconfig.setup {
+  ensure_installed = vim.tbl_keys(servers),
+}
+
+mason_lspconfig.setup_handlers {
+  function(server_name)
+    require("lspconfig")[server_name].setup {
+      capabilities = capabilities,
+      on_attach = on_attach,
+      settings = servers[server_name],
+    }
+  end,
+}
+
+-- Turn on lsp status information
+require("fidget").setup()
+
 -- [[elixir_ls]]
 -- https://github.com/elixir-lsp/elixir-ls
 -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#elixirls
 
-require("lspconfig").elixirls.setup {
-  cmd = { "/home/pdh/.config/lsp/elixir-ls/release/language_server.sh" },
-  on_attach = on_attach,
-  capabilities = capabilities,
-}
+-- [[ now handled by mason ]]
+-- require("lspconfig").elixirls.setup {
+--   cmd = { "/home/pdh/.config/lsp/elixir-ls/release/language_server.sh" },
+--   on_attach = on_attach,
+--   capabilities = capabilities,
+-- }
 
 -- [[luau_lsp]]
 -- This NOT Lua but a derivative, see https://luau-lang.org/
@@ -34,36 +77,42 @@ require("lspconfig").elixirls.setup {
 -- setup neodev BEFORE any other lsp
 require("neodev").setup {}
 
+-- [[ now handled by mason ]]
+--
 -- https://github.com/sumneko/lua-language-server
 -- https://github.com/sumneko/lua-language-server/wiki/Configuration-File#neovim-with-built-in-lsp-client
 -- https://github.com/nvim-lua/kickstart.nvim/blob/master/init.lua (tjdevries' kickstart)
-local lua_lsp_root = vim.fn.expand "~/.config/lsp/lua-language-server"
-local runtime_path = vim.split(package.path, ";")
-table.insert(runtime_path, "lua/?.lua")
-table.insert(runtime_path, "lua/?/ini.lua")
-
-require("lspconfig").sumneko_lua.setup {
-  cmd = { vim.fn.expand(lua_lsp_root .. "/bin/lua-language-server"), "-E", lua_lsp_root .. "/main.lua" },
-  on_attach = on_attach,
-  capabilities = capabilities,
-  settings = {
-    Lua = {
-      diagnostics = { globals = { "vim", "use" } },
-      runtime = { version = "Lua 5.1", path = runtime_path },
-      workspace = {
-        -- Make the server aware of Neovim runtime files
-        -- vim.api.nvim_get_runtime_file('', true)
-        library = {
-          -- [vim.fn.expand('$XDG_CONFIG_HOME/nvim')] = true,
-          [vim.fn.expand "$VIMRUNTIME/lua"] = true,
-          [vim.fn.expand "$VIMRUNTIME/lua/nvim/lsp"] = true,
-          -- [vim.fn.stdpath('config') .. '/lua'] = true,
-        },
-        checkThirdParty = false,
-      },
-    },
-  },
-}
+-- local lua_lsp_root = vim.fn.expand "~/.config/lsp/lua-language-server"
+-- local runtime_path = vim.split(package.path, ";")
+-- table.insert(runtime_path, "lua/?.lua")
+-- table.insert(runtime_path, "lua/?/ini.lua")
+--
+-- require("lspconfig").sumneko_lua.setup {
+--   cmd = {
+--     vim.fn.expand(lua_lsp_root .. "/bin/lua-language-server"),
+--     "-E",
+--     lua_lsp_root .. "/main.lua",
+--   },
+--   on_attach = on_attach,
+--   capabilities = capabilities,
+-- settings = {
+--   Lua = {
+--     diagnostics = { globals = { "vim", "use" } },
+--     runtime = { version = "Lua 5.1", path = runtime_path },
+--     workspace = {
+--       -- Make the server aware of Neovim runtime files
+--       -- vim.api.nvim_get_runtime_file('', true)
+--       library = {
+--         -- [vim.fn.expand('$XDG_CONFIG_HOME/nvim')] = true,
+--         [vim.fn.expand "$VIMRUNTIME/lua"] = true,
+--         [vim.fn.expand "$VIMRUNTIME/lua/nvim/lsp"] = true,
+--         -- [vim.fn.stdpath('config') .. '/lua'] = true,
+--       },
+--       checkThirdParty = false,
+--     },
+--   },
+-- },
+-- }
 
 --[[ LUA autoformatting ]]
 -- now done with ~/bin/stylua (-> ~/installs/stylua)

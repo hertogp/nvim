@@ -145,6 +145,11 @@ _G.packer_plugins = {
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/dracula.nvim",
     url = "https://github.com/Mofiqul/dracula.nvim"
   },
+  ["fidget.nvim"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/fidget.nvim",
+    url = "https://github.com/j-hui/fidget.nvim"
+  },
   ["gruvbox.nvim"] = {
     loaded = true,
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/gruvbox.nvim",
@@ -159,6 +164,16 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/pdh/.local/share/nvim/site/pack/packer/start/luv-vimdocs",
     url = "https://github.com/nanotee/luv-vimdocs"
+  },
+  ["mason-lspconfig.nvim"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/mason-lspconfig.nvim",
+    url = "https://github.com/williamboman/mason-lspconfig.nvim"
+  },
+  ["mason.nvim"] = {
+    loaded = true,
+    path = "/home/pdh/.local/share/nvim/site/pack/packer/start/mason.nvim",
+    url = "https://github.com/williamboman/mason.nvim"
   },
   ["neodev.nvim"] = {
     loaded = true,

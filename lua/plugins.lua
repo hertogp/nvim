@@ -1,30 +1,58 @@
 --  File: /home/pdh/.config/nvim/lua/plugins.lua
+-- --[[ BOOTSTRAP ]]
+-- see https://github.com/nvim-lua/kickstart.nvim/blob/master/init.lua
+local install_path = vim.fn.stdpath "data" .. "/site/pack/packer/start/packer.nvim"
+local is_bootstrap = false
+if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
+  is_bootstrap = true
+  vim.fn.system {
+    "git",
+    "clone",
+    "--depth",
+    "1",
+    "https://github.com/wbthomason/packer.nvim",
+    install_path,
+  }
+  vim.cmd [[packadd packer.nvim]]
+end
+
 return require("packer").startup(function(use)
   -- Packer can manage itself
   use "wbthomason/packer.nvim"
 
-  --{{ neovim docs ]]
+  --{{ NEOVIM DOCS ]]
   use "nanotee/luv-vimdocs"
   use "milisims/nvim-luaref"
 
-  --[[ LSP's ]]
-  --
-  -- Elixir
-  -- see ~/.config/lsp/elixir-ls
-  --
-  -- Lua
+  --[[ LSP ]]
   -- https://github.com/sumneko/lua-language-server
-  -- see ~/.config/lsp/lua-language-server/
-  --
-  -- LSP configuration
   -- https://github.com/neovim/nvim-lspconfig
-  use "neovim/nvim-lspconfig"
+  use {
+    "neovim/nvim-lspconfig",
+    requires = {
+      -- Automatically install LSPs to stdpath for neovim
+      "williamboman/mason.nvim",
+      "williamboman/mason-lspconfig.nvim",
 
-  --[[ Telescope ]]
+      -- Useful status updates for LSP
+      "j-hui/fidget.nvim",
+
+      -- Additional lua configuration, makes nvim stuff amazing
+      "folke/neodev.nvim",
+    },
+  }
+
+  --[[ TELESCOPE ]]
   -- https://github.com/nvim-telescope
   -- also installed  ~/installs/ripgrep and sudo apt install fd-find
   -- https://github.com/nvim-telescope/telescope.nvim
-  use { "nvim-telescope/telescope.nvim", tag = "0.1.0", requires = { { "nvim-lua/plenary.nvim" } } }
+  use {
+    "nvim-telescope/telescope.nvim",
+    tag = "0.1.0",
+    requires = {
+      "nvim-lua/plenary.nvim",
+    },
+  }
 
   -- https://github.com/nvim-telescope/telescope-fzf-native.nvim
   use {
@@ -35,7 +63,8 @@ return require("packer").startup(function(use)
   --https://github.com/nvim-telescope/telescope-file-browser
   -- see https://www.youtube.com/watch?v=nQIJghSU9TU&list=RDLV-InmtHhk2qM&index=5
   use "nvim-telescope/telescope-file-browser.nvim"
-  -- Treesitter
+
+  --[[ TREESITTER ]]
   -- https://github.com/nvim-treesitter/nvim-treesitter
   -- :TSInstall <language_to_install>
   -- `-> https://github.com/nvim-treesitter/nvim-treesitter#supported-languages
@@ -139,7 +168,7 @@ return require("packer").startup(function(use)
   -- https://github.com/sbdchd/neoformat
   -- use 'sbdchd/neoformat'
 
-  -- Code Navigation
+  --[[ CODE NAVIGATION ]]
   -- https://github.com/preservim/tagbar -- old
   -- https://github.com/stevearc/aerial.nvim
   -- use 'majutsushi/tagbar' -- old
@@ -186,15 +215,22 @@ return require("packer").startup(function(use)
   -- https://github.com/tomtom/tgpg_vim
   use "tomtom/tgpg_vim"
 
-  -- Outliners
+  --[[ OUTLINE ]]
   -- https://github.com/vim-scripts/VOOM
+  -- TODO: keep it or not?
   use "vim-voom/VOoM"
 
   -- https://github.com/simrat39/symbols-outline.nvim
   use "simrat39/symbols-outline.nvim"
+
+  --[[ STATUSLINE ]]
   -- https://github.com/nvim-tree/nvim-web-devicons
   -- Show lua =require"nvim-web-devicons".get_icons()  -- shows all icons
   use "kyazdani42/nvim-web-devicons"
   -- https://github.com/nvim-lualine/lualine.nvim
   use { "nvim-lualine/lualine.nvim", requires = { "kyazdani42/nvim-web-devicons", opt = true } }
+
+  if is_bootstrap then
+    require("packer").sync()
+  end
 end)
