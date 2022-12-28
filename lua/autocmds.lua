@@ -29,29 +29,30 @@ local TrimWhiteSpaceGrp = api.nvim_create_augroup("TrimWhiteSpaceGrp", { clear =
 api.nvim_create_autocmd("BufWritePre", { command = [[:%s/\s\+$//e]], group = TrimWhiteSpaceGrp })
 
 --[[ EasyQuit ]]
---- use q to quit all sorts of nofile-like windows
+--- use q to quit all sorts of nofile-like buffers
 local EasyQuitTable = {
   ["help"] = true,
-  ["man"] = true,
   ["nofile"] = true,
+  ["nowrite"] = true,
   ["quickfix"] = true,
   ["loclist"] = true,
   ["prompt"] = true,
+  [""] = false,
 }
 
 local EasyQuit = api.nvim_create_augroup("EasyQuit", { clear = true })
 api.nvim_create_autocmd({ "FileType" }, {
   group = EasyQuit,
-  -- pattern = {"lua", "help"},
   callback = function()
-    -- P(event.match) -- match is the filetype
+    -- TODO: maybe switch to just check that buftype ~= "" ?
+    -- since only `normal` buffers donot have a buftype
     if EasyQuitTable[vim.bo.buftype] then
       vim.keymap.set("n", "q", "<cmd>close<cr>", { noremap = true, silent = true })
     end
   end,
 })
 
---[[ Resume editing ]]
+--[[ RESUME editing ]]
 -- go to last loc when opening a buffer
 api.nvim_create_autocmd("BufReadPost", {
   -- command = [[if line("'\"") > 1 && line("'\"") <= line("$") | execute "normal! g`\"" | endif]]
