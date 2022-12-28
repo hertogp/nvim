@@ -24,7 +24,7 @@ VOoM markup mode for Cisco confg files. See |voom_mode_cisco|.
 # above the first match (creating one if needed).
 # The rgx matches two parts:
 #   - start_ignore
-#   - 
+#   -
 # Examples:
 #
 # interface fastethernet1/0/1
@@ -108,9 +108,9 @@ def get_level2(L,his=['']):
     elif fst in 'access-list dialer-list':
         vgrp = ' '.join(w[0:2])
     else:
-        if his[0] == fst: 
+        if his[0] == fst:
             return 2,''
-        else: 
+        else:
             his[0] = fst
             return 1,''
 
@@ -139,9 +139,9 @@ def get_level3(L,his=['']):
     elif fst in 'access-list dialer-list':
         vgrp = ' '.join(w[0:2])
     else:
-        if his[0] == fst: 
+        if his[0] == fst:
             return 2,''
-        else: 
+        else:
             his[0] = fst
             return 1,''
 
@@ -170,7 +170,7 @@ def hook_makeOutline(VO, blines):
     #     print >> sys.stdout, 'blines != VO.Body'
     #     print >> sys.stdout, 'blines\n','\n'.join(blines)
     #     print >> sys.stdout, '\n\nBody\n', '\n'.join(VO.Body)
-    for i,L in enumerate(blines):        
+    for i,L in enumerate(blines):
         Lp = blines[i-1] if i else ''
         b = i + 1                             # b refers to 1-based buffer line nr
         L = L.rstrip()           # clean the body line
@@ -209,7 +209,7 @@ def hook_newHeadline(VO, level, blnum, tlnum):
     return (tree_head, bodyLines)
 
 def update_bnodes(VO, tlnum, delta):
-    """Update VO.bnodes by adding/substracting delta to each bnode
+    """Update VO.bnodes by adding/subtracting delta to each bnode
     starting with bnode at tlnum and to the end.
     """
     bnodes = VO.bnodes

@@ -30,8 +30,14 @@ api.nvim_create_autocmd("BufWritePre", { command = [[:%s/\s\+$//e]], group = Tri
 
 --[[ EasyQuit ]]
 --- use q to quit all sorts of nofile-like windows
-local EasyQuitTable =
-  { ["help"] = true, ["man"] = true, ["nofile"] = true, ["quickfix"] = true, ["loclist"] = true, ["prompt"] = true }
+local EasyQuitTable = {
+  ["help"] = true,
+  ["man"] = true,
+  ["nofile"] = true,
+  ["quickfix"] = true,
+  ["loclist"] = true,
+  ["prompt"] = true,
+}
 
 local EasyQuit = api.nvim_create_augroup("EasyQuit", { clear = true })
 api.nvim_create_autocmd({ "FileType" }, {
@@ -67,9 +73,14 @@ api.nvim_create_autocmd("FileType", {
   group = auPandoc,
   callback = function()
     local opts = { noremap = true, silent = true }
-    -- <s-f4> acutally comes out as <f16> ?
+    -- <s-f4> actually comes out as <f16> ?
     bufkey("n", "<F16>", "<cmd>silent make|redraw!|copen<cr>", opts)
-    bufkey("n", "<F4>", '<cmd>silent make|redraw!|call jobstart(["xdg-open", expand("%:r").".pdf"])<cr>', opts)
+    bufkey(
+      "n",
+      "<F4>",
+      '<cmd>silent make|redraw!|call jobstart(["xdg-open", expand("%:r").".pdf"])<cr>',
+      opts
+    )
     vim.cmd [[compiler pandoc]]
   end,
 })

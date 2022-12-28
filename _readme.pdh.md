@@ -3,14 +3,14 @@
   date: today
 ---
 
-# nvim configuaration
+# nvim configuration
 
 # TODO:
 
 - [ ] clean up old plugins (incl docs)
 - [x] get an outliner for code files/markdown etc..
 - [x] understand tree-sitter better
-- [x] automatic formatting lua - donot have one-line funcs perse.
+- [x] automatic formatting lua - do not have one-line funcs perse.
 - [x] automatic formatting on save for lua
 - [x] change to luasnip instead of ultisnips (see: https://www.youtube.com/watch?v=h4g0m0Iwmysc
 - [x] fix it so we can push repo again (git remote set-url origin git@github.com:hertogp/nvim.git)

@@ -146,6 +146,9 @@ nmap("<space>M", ':lua require"telescope.builtin".man_pages({sections={"ALL"}})<
 nmap("<space>b", "<cmd>lua require'pdh.telescope'.buffers()<cr>", opts)
 nmap("<space>B", ':lua require"telescope.builtin".buffers({show_all_buffers=true})<cr>', opts)
 
+-- codespell to find spelling mistakes
+nmap("<space>c", "<cmd>lua require'pdh.telescope'.codespell()<cr>", opts)
+
 -- vim help
 nmap("<space>h", builtin.help_tags, opts)
 

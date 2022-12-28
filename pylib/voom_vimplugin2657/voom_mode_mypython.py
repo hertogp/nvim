@@ -93,7 +93,7 @@ def hook_makeOutline(VO, blines):
                 funcLevels.append(lev)
         # Line after a decorator. Not a def or class.
         elif isDecor:
-            # ingore valid lines between the first decorator and function/class
+            # ignore valid lines between the first decorator and function/class
             if bline_s.startswith('@') or isComment or not bline_s:
                 isHead = False
                 continue

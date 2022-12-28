@@ -2,6 +2,11 @@
 --[[ :h vim_diff ]]
 -- https://neovim.io/doc/user/vim_diff.html
 -- https://neovim.io/doc/user/vim_diff.html#nvim-defaults
+
+local api = vim.api
+local fs = vim.fs
+local uv = require "luv"
+
 --[[ global functions ]]
 --
 -- inspect a value and return it.
@@ -20,6 +25,23 @@ R = function(name)
   return require(name)
 end
 
+function Git_dir(bufnr)
+  -- get the git root directory for a given buffer or from cwd
+  -- if not found return nil
+  bufnr = bufnr or 0
+  -- scratch buffers -> fallback to cwd
+  local bufpath = vim.fs.dirname(api.nvim_buf_get_name(bufnr))
+  if #bufpath < 1 or bufpath == "." then
+    bufpath = uv.cwd()
+  end
+  bufpath = fs.normalize(bufpath)
+  local repo_dir = fs.find(".git", { path = bufpath, upward = true })[1]
+  if repo_dir then
+    return vim.fs.dirname(repo_dir)
+  else
+    return nil
+  end
+end
 --[[ NOTES ]]
 -- vim.o     get/set buffer/window OPTIONS    :set
 -- vim.bo    get/set buffer-scoped OPTIONS    :set and :setlocal

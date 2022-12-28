@@ -3,7 +3,7 @@
 --[[ USAGE
  fzf is installed and in the search prompt, you can do:
  asdf   -- fuzzy search                   includes items with those letters
- 'asdf  -- exact match                    includes items wih asdf exactly
+ 'asdf  -- exact match                    includes items with asdf exactly
  ^asdf  -- prefix-exact match             includes items that start with asdf
  asdf$  -- suffix-exact match             includes items that end with asdf
  !asdf  -- inverse-exact-match            excludes with asdf exactly
@@ -11,6 +11,8 @@
  !asdf$ -- inverse-suffix-exact-match     excludes items that end with asdf
  CAPS   -- is an exact-match
 ]]
+
+local uv = require "luv"
 
 --[[ Header ]]
 --[[ 1. Header ]]
@@ -87,7 +89,7 @@ local outline_ft_ts_query = {
 
 local outline_ft_ts_depth = {
   markdown = 6, -- allow 6 levels deep
-  lua = 1, -- means nodes are direcly below the root node
+  lua = 1, -- means nodes are directly below the root node
   elixir = 2, -- means node must be child of root or module-node
 }
 
@@ -156,7 +158,7 @@ local outline_previewer = function(src_bufnr)
       return { src_bufnr = vim.api.nvim_get_current_buf() }
     end,
     get_buffer_by_name = function(self, _)
-      -- TODO: check cacheing works, donot grok the docs :he telescope, :3377
+      -- TODO: check caching works, do not grok the docs :he telescope, :3377
       -- especially the mention of entry.your_unique_id ...
       return tostring(self) -- "table 0x..."
     end,
@@ -246,6 +248,63 @@ M.outline = function(opts)
     opts.previewer = outline_previewer(src_bufnr)
     local picker = pickers.new({ sorting_strategy = "ascending" }, opts)
     picker:find()
+  end
+end
+
+M.codespell = function(bufnr)
+  -- NOTES:
+  -- - changes working dir to git repo root directory (if found)
+  -- - note sure why it sometimes searches the .git dir and sometimes not?
+  -- - use a .codespellrc file in repo root to make it behave project specific.  E.g.
+  -- - skip does not tolerate spaces in between the directories (!)
+  -- - you'll need to add hidden directories (like .git) as well (!)
+  -- - codespell does not honor any .gitignore file present
+  --   [codespell]
+  --   quiet-level = 7                                    -- disable some warnings
+  --   disable-colors = true                              -- just to be safe
+  --   skip = .git,logs,tmp,scr,_build,deps   -- project specific
+
+  bufnr = bufnr or 0
+  local git = Git_dir(bufnr)
+  if git ~= nil then
+    vim.notify("[info] cwd set to " .. git, vim.log.levels.INFO)
+    uv.chdir(git)
+  end
+  local results = {}
+  local on_data = function(_, data)
+    if data then
+      for _, line in ipairs(data) do
+        if #line > 0 then
+          results[#results + 1] = line
+        end
+      end
+    end
+    return results
+  end
+
+  local function on_exit()
+    local lines = {}
+    for _, line in ipairs(results) do
+      local parts = vim.split(line, ":")
+      lines[#lines + 1] = { filename = parts[1], lnum = parts[2], text = parts[3] }
+    end
+    if #lines > 0 then
+      vim.fn.setqflist(lines)
+      require("telescope.builtin").quickfix()
+    else
+      vim.notify("[info] codespell found no spelling mistakes", vim.log.levels.INFO)
+    end
+  end
+
+  local retval = vim.fn.jobstart({ "codespell" }, {
+    stdout_buffered = true,
+    on_stdout = on_data,
+    on_exit = on_exit,
+  })
+  if retval == 0 then
+    vim.notify("[error] invalid arguments to codespell", vim.log.levels.ERROR)
+  elseif retval == -1 then
+    vim.notify("[error] codespell could not be executed", vim.log.levels.ERROR)
   end
 end
 

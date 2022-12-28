@@ -17,8 +17,7 @@ local function bufnr()
 end
 
 local function repo()
-  -- TODO: this depends on buffer having a filename.  Fails for
-  -- scratch buffers -> need to fallback to cwd
+  -- scratch buffers -> fallback to cwd
   local bufpath = fs.dirname(api.nvim_buf_get_name(0))
   if #bufpath < 1 or bufpath == "." then
     bufpath = uv.cwd()
