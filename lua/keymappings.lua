@@ -18,10 +18,12 @@ nmap("Y", "y$", opts) -- yank till eol, like D deletes till eol
 nmap("<m-j>", "i<cr><esc>", opts)
 imap("<c-p>", "<c-p><c-n>", opts) -- invoke keyword completion
 imap("<c-n>", "<c-n><c-p>", opts) -- invoke keyword completion
--- find notes
+
+-- [[ notes ]]
+-- donot set cwd since that'll change the working directory
 nmap(
   "<space>n",
-  "<cmd>lua require'telescope.builtin'.find_files({cwd='~/notes/', search_dirs={'~/notes'}})<cr>",
+  "<cmd>lua require'telescope.builtin'.find_files({search_dirs={'~/notes'}})<cr>",
   opts
 )
 
