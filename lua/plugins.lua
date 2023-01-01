@@ -31,6 +31,8 @@ return require("packer").startup(function(use)
     "neovim/nvim-lspconfig",
     requires = {
       -- Automatically install LSPs to stdpath for neovim
+      -- https://github.com/williamboman/mason.nvim
+      -- https://github.com/williamboman/mason-lspconfig.nvim
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
 

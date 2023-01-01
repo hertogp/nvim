@@ -145,8 +145,8 @@ nmap("<space>m", "<cmd>Telescope heading<cr>", opts)
 nmap("<space>M", ':lua require"telescope.builtin".man_pages({sections={"ALL"}})<cr>', opts)
 -- list and pick a buffer
 -- nmap("<space>b", builtin.buffers, opts)
-nmap("<space>b", "<cmd>lua require'pdh.telescope'.buffers()<cr>", opts)
-nmap("<space>B", ':lua require"telescope.builtin".buffers({show_all_buffers=true})<cr>', opts)
+nmap("<space>b", "<cmd>lua require'pdh.telescope'.buffers({sort_mru=true})<cr>", opts)
+nmap("<space>B", ':lua require"telescope.builtin".buffers({ sort_mru=true})<cr>', opts)
 
 -- codespell to find spelling mistakes
 nmap("<space>c", "<cmd>lua require'pdh.telescope'.codespell()<cr>", opts)
@@ -172,6 +172,7 @@ nmap("<space>V", "<cmd>VoomToggle<cr>", opts)
 --[[ leader keys ]]
 nmap("<leader>ev", "<cmd>edit ~/.config/nvim/init.lua<cr>", opts)
 nmap("<leader>sv", "<cmd>source ~/.config/nvim/init.lua<cr>", opts)
+nmap("<leader><leader>x", "<cmd>write|source %<cr>", opts)
 
 --[[ DEBUGGING ]]
 nmap("<F8>", "<cmd>lua require'dap'.toggle_breakpoint()<CR>", opts)

@@ -16,6 +16,8 @@ local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
 
 --[[ MASON ]]
+-- https://github.com/williamboman/mason.nvim
+-- https://github.com/williamboman/mason-lspconfig.nvim
 -- Setup mason so it can manage external tooling
 --  Add any additional override configuration in the following tables. They will be passed to
 --  the `settings` field of the server config. You must look up that documentation yourself.
@@ -25,11 +27,23 @@ local servers = {
   -- pyright = {},
   -- rust_analyzer = {},
   -- tsserver = {},
+  elixirls = {},
 
   sumneko_lua = {
     Lua = {
       diagnostics = { globals = { "vim", "use" } },
-      workspace = { checkThirdParty = false },
+      workspace = {
+
+        -- Make the server aware of Neovim runtime files
+        -- vim.api.nvim_get_runtime_file('', true)
+        library = {
+          -- [vim.fn.expand('$XDG_CONFIG_HOME/nvim')] = true,
+          [vim.fn.expand "$VIMRUNTIME/lua"] = true,
+          [vim.fn.expand "$VIMRUNTIME/lua/vim"] = true,
+          -- [vim.fn.stdpath('config') .. '/lua'] = true,
+        },
+        checkThirdParty = false,
+      },
       telemetry = { enable = false },
     },
   },
