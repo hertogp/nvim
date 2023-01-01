@@ -47,7 +47,7 @@ api.nvim_create_autocmd({ "FileType" }, {
     -- TODO: maybe switch to just check that buftype ~= "" ?
     -- since only `normal` buffers donot have a buftype
     if EasyQuitTable[vim.bo.buftype] then
-      vim.keymap.set("n", "q", "<cmd>close<cr>", { noremap = true, silent = true })
+      vim.api.nvim_buf_set_keymap("n", "q", "<cmd>close<cr>", { noremap = true, silent = true })
     end
   end,
 })
