@@ -1,9 +1,9 @@
 -- auto-cmd.lua
 local api = vim.api
-local fs = vim.fs
-local nmap = function(keys, cmd, opts)
-  vim.keymap.set("n", keys, cmd, opts)
-end
+-- local fs = vim.fs
+-- local nmap = function(keys, cmd, opts)
+--   vim.keymap.set("n", keys, cmd, opts)
+-- end
 
 -- helpers
 local function bufkey(mode, keys, cmd, opts)
@@ -62,6 +62,7 @@ api.nvim_create_autocmd("BufReadPost", {
     local lines = api.nvim_buf_line_count(0)
     local linenr = mark[1]
 
+    print("BufReadPost triggered, mark is " .. vim.inspect(mark))
     if linenr > 1 and linenr < lines then
       api.nvim_win_set_cursor(0, mark)
     end

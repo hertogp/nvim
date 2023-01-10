@@ -15,9 +15,7 @@
 local uv = require "luv"
 
 --[[ Header ]]
---[[ 1. Header ]]
 
-P "File: ~/.config/nvim/lua/pdh/telescope.lua required!"
 local action_state = require "telescope.actions.state"
 local actions = require "telescope.actions"
 
@@ -263,13 +261,12 @@ M.codespell = function(bufnr)
   --   quiet-level = 7                                    -- disable some warnings
   --   disable-colors = true                              -- just to be safe
   --   skip = .git,logs,tmp,scr,_build,deps   -- project specific
+  --   TODO: add keymap in normal mode that applies the suggested correction
+  --   TODO: add keymap that does codespell only for current buffer (file)
 
+  local bufonly = bufnr or false
   bufnr = bufnr or 0
   local git = Git_dir(bufnr)
-  if git ~= nil then
-    vim.notify("[info] cwd set to " .. git, vim.log.levels.INFO)
-    uv.chdir(git)
-  end
   local results = {}
   local on_data = function(_, data)
     if data then
@@ -296,11 +293,26 @@ M.codespell = function(bufnr)
     end
   end
 
-  local retval = vim.fn.jobstart({ "codespell" }, {
-    stdout_buffered = true,
-    on_stdout = on_data,
-    on_exit = on_exit,
-  })
+  local retval
+  if bufonly then
+    local filename = vim.api.nvim_buf_get_name(0)
+    retval = vim.fn.jobstart({ "codespell", filename }, {
+      stdout_buffered = true,
+      on_stdout = on_data,
+      on_exit = on_exit,
+    })
+  else
+    if git ~= nil then
+      vim.notify("[info] cwd set to " .. git, vim.log.levels.INFO)
+      uv.chdir(git)
+    end
+    retval = vim.fn.jobstart({ "codespell" }, {
+      stdout_buffered = true,
+      on_stdout = on_data,
+      on_exit = on_exit,
+    })
+  end
+
   if retval == 0 then
     vim.notify("[error] invalid arguments to codespell", vim.log.levels.ERROR)
   elseif retval == -1 then
