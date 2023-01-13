@@ -167,6 +167,7 @@ local function otl_show(otl)
   vim.api.nvim_win_set_option(otl.dwin, "wrap", false)
   vim.api.nvim_win_set_option(otl.dwin, "spell", false)
   vim.api.nvim_win_set_option(otl.dwin, "cursorline", true)
+  vim.api.nvim_win_set_option(otl.dwin, "winhighlight", "CursorLine:Visual")
 
   return true
 end
