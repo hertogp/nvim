@@ -132,7 +132,8 @@ nmap("<space>L", function()
 end, { desc = "[/] Fuzzily search in current buffer]" })
 
 -- search document SymbolsOutline
-nmap("<space>o", "<cmd>SymbolsOutline<cr>")
+nmap("<space>o", "<cmd>lua require'pdh.outline'.open()<cr>")
+nmap("<space>O", "<cmd>SymbolsOutline<cr>")
 nmap("<space>s", builtin.lsp_document_symbols, opts)
 
 -- search todo, fixme, xxx's etc.., either in local buffer or in cwd and lower
