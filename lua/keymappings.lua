@@ -13,6 +13,7 @@ local opts = { noremap = true, silent = true }
 
 --[[ editing ]]
 nmap("Q", "gq}", opts)
+nmap("q", "<Nop>", opts)
 nmap("Y", "y$", opts) -- yank till eol, like D deletes till eol
 -- use <M-j> to split a line, like <S-j> combines lines
 nmap("<m-j>", "i<cr><esc>", opts)
@@ -74,8 +75,8 @@ nmap("<c-d>", "<c-d>zz", opts) -- scroll window downard
 -- save & redo/undo
 imap("jj", "<esc>", opts)
 nmap("R", "<c-r>", opts) -- R(edo), u is already undo and r(eplace) is taken
-imap("<c-s>", "<esc><cmd>update<cr>", opts)
-nmap("<c-s>", "<cmd>update<cr>", opts)
+imap("<c-s>", "<esc><cmd>SaveKeepPos<cr>", opts)
+nmap("<c-s>", "<cmd>SaveKeepPos<cr>", opts)
 -- function kyes
 nmap("<f5>", ":redraw!", opts)
 

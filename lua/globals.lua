@@ -1,4 +1,5 @@
 -- lua/globals.lua
+
 --[[ :h vim_diff ]]
 -- https://neovim.io/doc/user/vim_diff.html
 -- https://neovim.io/doc/user/vim_diff.html#nvim-defaults
@@ -124,7 +125,6 @@ local function show_in_tab(t)
 
   -- open a new tab
   api.nvim_command "tabnew"
-  -- set filetype=nofile  so 'q' just works in normal mode
   -- api.nvim_buf_set_option(0, 'filetype', 'nofile')
   -- api.nvim_buf_set_option(0, 'buftype', 'nofile')
   api.nvim_buf_set_option(0, "bufhidden", "wipe")
@@ -148,4 +148,29 @@ api.nvim_create_user_command(
   show_in_tab,
   { complete = "shellcmd", nargs = "+", desc = "Show cmd output in a new tab" }
 )
--- api.nvim_create_user_command("Todo", "lua require'pdh.telescope'.grep(nargs=*)", {})
+
+local function save_keep_pos()
+  -- update a buffer (i.e. write if modified) whithout changing its split views
+  -- Notes:
+  -- - winsaveview -> gives cursor position as well as the linenr op topline in the window
+  -- - winrestview -> you can hand it a table that does not have all the values returned
+  --                  by winsaveview (e.g. winrestview({topline = 10}) will scroll the window
+  --                  such that the 10th line is shown as first line of the window.
+  local bufnr = vim.api.nvim_get_current_buf()
+  local winids = vim.fn.win_findbuf(bufnr)
+  local views = {}
+
+  for _, winid in ipairs(winids) do
+    views[winid] = vim.api.nvim_win_call(winid, vim.fn.winsaveview)
+  end
+
+  vim.cmd.update()
+
+  for winid, view in pairs(views) do
+    vim.api.nvim_win_call(winid, function()
+      vim.fn.winrestview(view)
+    end)
+  end
+end
+
+api.nvim_create_user_command("SaveKeepPos", save_keep_pos, {})

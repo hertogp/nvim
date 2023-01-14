@@ -1,6 +1,7 @@
 -- File: ~/.config/nvim/lua/pdh/outline.lua
 -- [[ Find outline for various filetypes ]]
 
+--
 --[[
 -- otl is a table: {
   -- sbuf  - source buffer for which outline is requested/created
@@ -73,8 +74,14 @@ local function win_goto(winid)
     return
   end
   -- win_gotoid(winid)
-  local winnr = vim.api.nvim_win_get_number(winid)
-  vim.cmd(string.format("noautocmd %dwincmd w", winnr))
+  if vim.api.nvim_win_is_valid(winid) then
+    vim.api.nvim_set_current_win(winid)
+  else
+    vim.notify("[warn] could not move to invalid winid", vim.log.levels.WARN)
+  end
+  -- local winnr = vim.api.nvim_win_get_number(winid)
+  -- vim.cmd(string.format("noautocmd %dwincmd w", winnr))
+  -- vim.api.nvim_set_current_win(winid)
 end
 
 --[[ OTL funcs ]]
@@ -196,9 +203,19 @@ end
 
 M.close = function(bufnr)
   -- close the otlwinid
-  -- remove (unnload) otlbufnr
+  -- remove (unload) otlbufnr
   -- update srcbufnr by setting its bo.otlbufnr to nil
   -- may triggered by 'q' in normal mode
+  if bufnr == nil or bufnr == 0 then
+    bufnr = vim.api.nvim_get_current_buf()
+  end
+  local otl = vim.b[bufnr].otl
+  if otl ~= nil and vim.api.nvim_win_is_valid(otl.dwin) then
+    vim.api.nvim_win_close(otl.dwin, true)
+    vim.b[otl.sbuf].otl = nil
+  else
+    vim.notify("[warn] could not close (invalid winid)", vim.log.levels.WARN)
+  end
 end
 
 M.outline = function(bufnr)
