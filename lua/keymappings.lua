@@ -133,7 +133,7 @@ nmap("<space>L", function()
 end, { desc = "[/] Fuzzily search in current buffer]" })
 
 -- search document SymbolsOutline
-nmap("<space>o", "<cmd>lua require'pdh.outline'.open()<cr>")
+nmap("<space>o", "<cmd>lua require'pdh.outline'.toggle()<cr>")
 nmap("<space>O", "<cmd>SymbolsOutline<cr>")
 nmap("<space>s", builtin.lsp_document_symbols, opts)
 
