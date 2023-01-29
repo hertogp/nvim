@@ -62,7 +62,7 @@ api.nvim_create_autocmd("BufReadPost", {
     local lines = api.nvim_buf_line_count(0)
     local linenr = mark[1]
 
-    print("BufReadPost triggered, mark is " .. vim.inspect(mark))
+    -- print("BufReadPost triggered, mark is " .. vim.inspect(mark))
     if linenr > 1 and linenr < lines then
       api.nvim_win_set_cursor(0, mark)
     end

@@ -1,361 +1,427 @@
 -- File: ~/.config/nvim/lua/pdh/outline.lua
 -- [[ Find outline for various filetypes ]]
 
---
 --[[
--- otl is a table: {
-  -- sbuf  - source buffer for which outline is requested/created
-  -- swin  - window where request was made
-  -- dbuf  - destination (i.e. outline) buffer
-  -- dwin  - window where it is shown (at some point)
-  -- tick  - last changetick
-  -- txt   - text for the outline buffer
-  -- idx   - corresponding linenrs in source buffer of outline text
---
---this table is stored in both sbuf and dbuf
---
---Functions:
---otl_new, get initial table
---otl_outline, gets the outline for sbuf (checks changedtick)
---otl_show, shows the dbuf in a (new) window
---otl_toggle, hide/show the outline window
---]]
-
---[[
-Corner cases
-* sbuf is hidden, but dbuf is not (user switch buffers for example)
-  - what is toggle todo if you're in dwin?
-* sbuf is unloaded, dbuf & dwin will persist (at the moment) but have
-  no relevance anymore ...
-* sbuf has split windows on it, swin is the original window from which
-  outline was opened.  What todo if that window was closed?
-  - toggle should work from any split
-  - shuttle should move to the next available window of sbuf
-
-Interesting VIM Buffer functions
-- vim.fn.win_findbuf(buf) -> list of window id's that contain bufnr (across all tabs!)
-- vim.fn.bufwinnr(buf) -> -1 is buf is not visible in the cur. tabpage, winnr otherwise
-- vim.fn.bufwinid(buf) -> -1 is there is no window showing bufnr, (first) winid otherwise
-- vim.fn.bufexists(buf) -> 1 if true, buf may be shown, hidden, listed or unlisted
-- vim.fn.bufloaded(buf) -> nr, true if exists & loaded (hidden or shown in a window)
-- vim.fn.bufnr(buf, [create]) -> -1 if not exists, create is true -> new buf created
-
-Interesting LUA buffer api function
-- vim.api.nvim_buf_is_loaded ->
-- vim.api.nvim_buf_del_keymap -> unmaps a buffer-local mapping
-- vim.api.nvim_buf_del_var -> delete buffer scoped variable
-- vim.api.nvim_buf_et_changedtick -> gets the b:changedtick value
-- vim.api.nvim_buf_attach -> attach a callback to buf events (changes)
-- vim.api.nvim_buf_is_valid -> even if valid, buf may have been unloaded (!)
-- vim.api.nvim_buf_line_count -> line count, or 0 is buf was unloaded
-- vim.api.nvim_buf_set_keymap
-- vim.api.nvim_buf_set_lines
-- vim.api.nvim_buf_set_text -> set text (more granular than linewise)
-- vim.api.nvim_buf_set_var -> set buf scoped variable
-
-Interesting LUA win api functions
-- vim.api.nvim_win_get_cursor -> (1,0) indexed position
-- vim.api.nvim_win_set_cursor -> (1,0) indexed position
-- vim.api.nvim_win_get_number -> gets window nr in its (!) tabpage (not necessarily the cur.tabpage)
-- vim.api.nvim_win_get_tabpage -> tabpage that contains the window
-- vim.api.nvim_win_is_valid -> true is valid, even if window is in another tab
-- vim.api.nvim_win_set_hs_ns -> sets hl namespace for given window
-
-Interesting VIM commands for scrolling (:he scroll-cursor:)
-- z.  redraw line at center of window, cursor on first non blank
-
-Interesting Buffer- or WinEvents
-- BufHidden, before buffer becomes hidden (no windows), but it's not unloaded/deleted
-- BufDelete, before deleting a buffer from buffer list
-- BufUnload, before unloading a buffer (After BufWritePost, before BufDelete)
-- WinClosed, when closing a window just before it is removed from the layout (after WinLeave)
-and:
-- BufWinEnter, after a buffer is displayed in a window (buffer loaded or unhidden)
-- BufWinLeave, before buffer is removed from a window (not when it is still visible in another window)
-               also triggered when exiting, before BufUnload, BufHidden.  Not triggered when switching
-               to another tab
-
-
-See :he autocmd-buffer-local:
-- vim.api.nvim_get_autocmds({buffer=1})
-- vim.api.nvim_create_autocmd, use opts = {buffer=N}) to make it buffer local
-- vim.api.nvim_del_autocmd(id), id that was returned by nvim_create_autocmd
-
-/usr/local/share/nvim/runtime/lua/vim/lsp/buf.lua
-
+Behaviour
+- otl is toggle'd from a buffer in window x:
+  * buffer has no b.otl -> create one, note x as otl.swin, select otl window
+  * buffer has an b.otl -> close its window, remove b.otl, stay in current window
+  * toggle should ignore calls when org window is a floating window
+- when shuttle'ing, otl attaches to the win showing sbuf
+- swin becomes invisible -> otl is hidden as well
+- swin becomes visible   -> otl becomes visible again
+- otl becomes invisible  -> otl is destroyed and sbuf.otl is removed and swin is selected
 --]]
 
 --[[ GLOBALS ]]
 
-vim.api.nvim_create_augroup("OTL", { clear = true })
-vim.api.nvim_create_autocmd("BufWinLeave", {
-  buffer = 1,
-  callback = function()
-    print "BufWinLeave for buffer 1"
-  end,
-})
---tmp see https://github.com/nvim-telescope/telescope.nvim/blob/30e2dc5232d0dd63709ef8b44a5d6184005e8602/lua/telescope/actions/set.lua
---lines 201-219
+local M = {}
 
-function centerline(buf, linenr)
-  local win = vim.fn.bufwinid(buf)
-  vim.api.nvim_win_set_cursor(win, { line, 0 })
-  vim.api.nvim_win_call(win, function()
-    vim.cmd "z."
-  end)
-  -- local cline = vim.api.nvim_get_cursor()[1]
-
-  -- vim.api.nvim_win_call(status.results_win, function()
-  --   vim.cmd([[normal! ]] .. math.floor(speed) .. input)
-  -- end)
-  --
-  -- action_set.shift_selection(prompt_bufnr, math.floor(speed) * direction)
-end
-
-local api = vim.api
-
-local ft2qry = {
+M.queries = {
   -- Treesitter queries that yield an outline for a given file type
-  ["markdown"] = [[(section (atx_heading) @head) ]],
+  -- see https://github.com/elixir-lang/tree-sitter-elixir/tree/main/queries
+  elixir = [[
+    ((comment) @head (#lua-match? @head "^[%s#]+%[%[[^\n]+%]%]$"))
+    (((call (identifier) @x) (#any-of? @x "defmodule" "use" "alias" "def" "defp")) @head)
+    (((unary_operator (call (identifier) @h)) @head) (#not-any-of? @h "spec" "doc" "moduledoc"))
+  ]],
+
+  lua = [[
+    ((comment) @head (#lua-match? @head "^--%[%[[^\n]+%]%]$"))
+    ((function_declaration) @head)
+    ((assignment_statement) @head)
+    ((variable_declaration) @head)
+    ]],
+
+  markdown = [[
+    (section (atx_heading) @head)
+    (setext_heading (paragraph) @head)
+  ]],
 }
 
-local M = {}
+M.depth = {
+  elixir = 2,
+  lua = 1,
+  markdown = 6,
+}
 
 --[[ BUFFER funcs ]]
 
-local function buf_sanitize(bufnr)
-  -- return a real, valid bufnr or nil
-  if bufnr == nil or bufnr == 0 then
+local function buf_sanitize(buf)
+  -- return a real, valid buffer number or nil
+  if buf == nil or buf == 0 then
     return vim.api.nvim_get_current_buf()
-  elseif vim.api.nvim_buf_is_valid(bufnr) then
-    return bufnr
+  elseif vim.api.nvim_buf_is_valid(buf) then
+    return buf
   end
   return nil
 end
 
-local function buf_isvalid(bufnr)
-  if bufnr == nil or bufnr == 0 then
-    bufnr = vim.api.nvim_get_current_buf()
-  end
-
-  if api.nvim_buf_is_valid(bufnr) and api.nvim_buf_is_loaded(bufnr) then
-    return true, bufnr, ""
-  end
-
-  return false, bufnr, "invalid bufnr" .. vim.inspect(bufnr)
-end
-
 --[[ WINDOW funcs ]]
 
+local function win_centerline(win, linenr)
+  -- try to center linenr in window win
+  if vim.api.nvim_win_is_valid(win) then
+    pcall(vim.api.nvim_win_set_cursor, win, { linenr, 0 })
+    vim.api.nvim_win_call(win, function()
+      vim.cmd "normal! zz"
+    end)
+  end
+end
+
 local function win_isvalid(winid)
-  if winid == 0 then
-    return true
-  elseif winid == nil then
-    return false
-  else
+  if type(winid) == "number" then
     return vim.api.nvim_win_is_valid(winid)
+  else
+    return false
+  end
+end
+
+local function win_close(winid)
+  -- safely close a window by its id.
+  if win_isvalid(winid) then
+    vim.api.nvim_win_close(winid, true)
   end
 end
 
 local function win_goto(winid)
-  if winid == nil or winid == 0 or winid == vim.api.nvim_get_current_win() then
+  if winid == 0 or winid == vim.api.nvim_get_current_win() then
     return
   end
   if vim.api.nvim_win_is_valid(winid) then
     vim.api.nvim_set_current_win(winid)
-  else
-    vim.notify("[warn] could not move to invalid winid", vim.log.levels.WARN)
   end
+end
+
+--[[ TS funcs ]]
+
+local function ts_depth(node, root)
+  -- how deep is node relative to root?
+  local depth = 0
+  local p = node:parent()
+  while p and p ~= root do
+    depth = depth + 1
+    p = p:parent()
+  end
+  return depth
+end
+
+local function ts_outline(bufnr)
+  -- return two lists: {linenrs}, {lines} based on a filetype specific TS query
+  local ft = vim.bo[bufnr].filetype
+  local max_depth = M.depth[ft] or 0
+  local qry = M.queries[ft]
+  if qry == nil then
+    vim.notify("[WARN] unsupported filetype: " .. ft, vim.log.levels.WARN)
+    return {}, {}
+  end
+
+  local query = vim.treesitter.parse_query(ft, qry)
+  local parser = vim.treesitter.get_parser(bufnr, ft, {})
+  local tree = parser:parse()
+  local root = tree[1]:root()
+
+  local blines = {}
+  local idx = {}
+  local lines
+  for id, node, _ in query:iter_captures(root, 0, 0, -1) do
+    local depth = ts_depth(node, root)
+    local capture = query.captures[id]
+
+    local linenr = node:range() -- ignore start_col, end_row, end_col
+    local prev_line = idx[#idx] or -1 -- use -1 when `idx` is still empty
+    if depth <= max_depth and capture == "head" and linenr ~= prev_line then
+      lines = vim.treesitter.query.get_node_text(node, bufnr, { concat = false })
+
+      if #lines > 0 then
+        blines[#blines + 1] = " " .. lines[1]
+        idx[#idx + 1] = linenr + 1
+      end
+    end
+  end
+  return idx, blines
 end
 
 --[[ OTL funcs ]]
 
-local function otl_close()
-  -- close otl window, move to src buffer
-  local otl = vim.b.otl
-
-  if otl and win_isvalid(otl.dwin) then
-    vim.api.nvim_win_close(otl.dwin, true)
-    win_goto(otl.swin)
-  else
-    vim.notify("[warn] closing outline was not needed", vim.log.levels.WARN)
+---get outline, set otl.idx and fill otl.obuf with lines
+---@param otl table
+local function otl_outline(otl)
+  -- get the outline for otl.sbuf & create/fill owin/obuf if needed
+  -- local lines = { " one", " ten", " twenty", " thirty", " sixty", " hundred" }
+  -- otl.idx = { 1, 10, 20, 30, 60, 100 }
+  local idx, lines = ts_outline(otl.sbuf)
+  otl.idx = idx
+  otl.tick = vim.b[otl.sbuf].changedtick
+  if otl.owin == nil then
+    vim.api.nvim_command "noautocmd topleft 40vnew"
+    otl.obuf = vim.api.nvim_get_current_buf()
+    otl.owin = vim.api.nvim_get_current_win()
   end
-  if buf_isvalid(otl.sbuf) then
-    vim.b[otl.sbuf].otl = nil
-  end
-end
-
----get outline, set otl.idx and fill otl.dbuf with lines
----@param buf number
-local function otl_outline(buf)
-  -- otl must contain src bufnr at least.
-  -- TODO: actually implement this.
-  -- NOTE: leading space is so cursor doesn't hide first char.
-  local txt = { " one", " ten", " twenty", " thirty" }
-  local idx = { 1, 10, 20, 30 }
-  return idx, txt
+  vim.api.nvim_buf_set_option(otl.obuf, "modifiable", true)
+  vim.api.nvim_buf_set_lines(otl.obuf, 0, -1, false, lines)
+  vim.api.nvim_buf_set_option(otl.obuf, "modifiable", false)
+  return otl
 end
 
 ---sync otl table between src/dst
 ---@param otl table
 local function otl_sync(otl)
   -- store otl as src/dst buffer variable, assumes a valid otl
-  -- alt: vim.b[otl.dbuf].otl = otl
-  vim.api.nvim_buf_set_var(otl.dbuf, "otl", otl)
+  -- alt: vim.b[otl.obuf].otl = otl
+  vim.api.nvim_buf_set_var(otl.obuf, "otl", otl)
   vim.api.nvim_buf_set_var(otl.sbuf, "otl", otl)
   return otl
 end
 
 local function otl_settings(otl)
   -- otl window options
-  vim.api.nvim_win_set_option(otl.dwin, "list", false)
-  vim.api.nvim_win_set_option(otl.dwin, "winfixwidth", true)
-  vim.api.nvim_win_set_option(otl.dwin, "number", false)
-  vim.api.nvim_win_set_option(otl.dwin, "signcolumn", "no")
-  vim.api.nvim_win_set_option(otl.dwin, "foldcolumn", "0")
-  vim.api.nvim_win_set_option(otl.dwin, "relativenumber", false)
-  vim.api.nvim_win_set_option(otl.dwin, "wrap", false)
-  vim.api.nvim_win_set_option(otl.dwin, "spell", false)
-  vim.api.nvim_win_set_option(otl.dwin, "cursorline", true)
-  vim.api.nvim_win_set_option(otl.dwin, "winhighlight", "CursorLine:Visual")
+  vim.api.nvim_win_set_option(otl.owin, "list", false)
+  vim.api.nvim_win_set_option(otl.owin, "winfixwidth", true)
+  vim.api.nvim_win_set_option(otl.owin, "number", false)
+  vim.api.nvim_win_set_option(otl.owin, "signcolumn", "no")
+  vim.api.nvim_win_set_option(otl.owin, "foldcolumn", "0")
+  vim.api.nvim_win_set_option(otl.owin, "relativenumber", false)
+  vim.api.nvim_win_set_option(otl.owin, "wrap", false)
+  vim.api.nvim_win_set_option(otl.owin, "spell", false)
+  vim.api.nvim_win_set_option(otl.owin, "cursorline", true)
+  vim.api.nvim_win_set_option(otl.owin, "winhighlight", "CursorLine:Visual")
 
   -- otl buffer
-  vim.api.nvim_buf_set_name(otl.dbuf, "Otl #" .. otl.dbuf)
-
-  vim.api.nvim_buf_set_option(otl.dbuf, "buftype", "nofile")
-  vim.api.nvim_buf_set_option(otl.dbuf, "bufhidden", "wipe")
-  vim.api.nvim_buf_set_option(otl.dbuf, "buflisted", false)
-  vim.api.nvim_buf_set_option(otl.dbuf, "swapfile", false)
-  vim.api.nvim_buf_set_option(otl.dbuf, "modifiable", false)
-  vim.api.nvim_buf_set_option(otl.dbuf, "filetype", "otl-outline")
+  vim.api.nvim_buf_set_name(otl.obuf, "Otl #" .. otl.obuf)
+  vim.api.nvim_buf_set_option(otl.obuf, "buftype", "nofile")
+  vim.api.nvim_buf_set_option(otl.obuf, "bufhidden", "wipe")
+  vim.api.nvim_buf_set_option(otl.obuf, "buflisted", false)
+  vim.api.nvim_buf_set_option(otl.obuf, "swapfile", false)
+  vim.api.nvim_buf_set_option(otl.obuf, "modifiable", false)
+  vim.api.nvim_buf_set_option(otl.obuf, "filetype", "otl-outline")
 
   -- otl keymaps
   local opts = { noremap = true, silent = true }
-  vim.api.nvim_buf_set_keymap(otl.dbuf, "n", "q", "<cmd>lua require'pdh.outline'.close()<cr>", opts)
+  vim.api.nvim_buf_set_keymap(otl.obuf, "n", "q", "<cmd>lua require'pdh.outline'.close()<cr>", opts)
+
+  local up = "<cmd>lua require'pdh.outline'.up()<cr>"
+  local down = "<cmd>lua require'pdh.outline'.down()<cr>"
+  vim.api.nvim_buf_set_keymap(otl.obuf, "n", "<Up>", up, opts)
+  vim.api.nvim_buf_set_keymap(otl.obuf, "n", "K", up, opts)
+  vim.api.nvim_buf_set_keymap(otl.obuf, "n", "<Down>", down, opts)
+  vim.api.nvim_buf_set_keymap(otl.obuf, "n", "J", down, opts)
+
   local shuttle = "<cmd>lua require'pdh.outline'.shuttle()<cr>"
-  vim.api.nvim_buf_set_keymap(otl.dbuf, "n", "<cr>", shuttle, opts)
+  vim.api.nvim_buf_set_keymap(otl.obuf, "n", "<cr>", shuttle, opts)
   vim.api.nvim_buf_set_keymap(otl.sbuf, "n", "<cr>", shuttle, opts)
+
+  -- otl autocmds
+  vim.api.nvim_create_augroup("OtlAuGrp", { clear = true })
+  vim.api.nvim_create_autocmd("BufWinLeave", {
+    -- last window showing sbuf closed -> close otl.
+    buffer = otl.sbuf,
+    group = "OtlAuGrp",
+    desc = "OTL wipe otl window and vars",
+    callback = function()
+      if vim.b[otl.sbuf].otl then
+        -- triggered by something else than M.toggle
+        M.close(otl.sbuf)
+      end
+    end,
+  })
+  vim.api.nvim_create_autocmd("BufWinLeave", {
+    -- the otl buffer is going away (switch buf or close window)
+    buffer = otl.obuf,
+    group = "OtlAuGrp",
+    desc = "OTL wipe otl window and vars",
+    callback = function()
+      if vim.b[otl.obuf].otl then
+        -- triggered by something else than M.toggle
+        M.close(otl.sbuf)
+      end
+    end,
+  })
+  vim.api.nvim_create_autocmd("WinEnter", {
+    -- Upon entering the otl window -> check changedtick & update if necessary
+    buffer = otl.obuf,
+    group = "OtlAuGrp",
+    desc = "OTL maybe update outline",
+    callback = function()
+      if vim.b[otl.obuf].otl then
+        local otick = otl.tick
+        local stick = vim.b[otl.sbuf].changedtick
+        if stick > otick then
+          otl_outline(otl)
+        end
+      end
+    end,
+  })
 end
 
-local function otl_open()
-  local otl = vim.b.otl
+local function otl_nosettings(otl)
+  -- remove otl keymaps in sbuf
+  pcall(vim.api.nvim_buf_del_keymap, otl.sbuf, "n", "<cr>")
 
-  if otl then
-    -- simply focus on existing otl
-    if otl.dwin and vim.api.nvim_win_is_valid(otl.dwin) then
-      win_goto(otl.dwin)
-      return true
-    else
-      return false
-    end
-  else
-    -- create new otl window with outline
-    local sbuf = vim.api.nvim_get_current_buf()
-    local swin = vim.api.nvim_get_current_win()
-    local tick = vim.b.changedtick
-    local idx, lines = otl_outline(sbuf)
-    vim.api.nvim_command "noautocmd topleft 40vnew"
-    local dbuf = vim.api.nvim_get_current_buf()
-    local dwin = vim.api.nvim_get_current_win()
-    vim.api.nvim_buf_set_lines(dbuf, 0, -1, false, lines)
-    otl = {
-      sbuf = sbuf,
-      swin = swin,
-      tick = tick,
-      dbuf = dbuf,
-      dwin = dwin,
-      idx = idx,
-    }
-    otl_settings(otl)
-    otl_sync(otl)
-  end
-end
-
-local function otl_move(n)
-  -- move line in otl window n lines up/down, wraps around and scroll sbuf
-  -- so associated sbuf line is centered
-  local otl = vim.b.otl
-  if otl == nil then
-    vim.notify("[warn] otl_move sees no otl", vim.log.levels.WARN)
-    return
-  end
-  local oline = vim.api.nvim_win_get_cursor(otl.dwin)[1]
-  vim.api.nvim_win_set_cursor(otl.dwin, { oline, 0 })
+  -- remove otl autogrp
+  pcall(vim.api.nvim_del_augroup_by_name, "OtlAuGrp")
 end
 
 local function otl_select(sline)
   -- given the linenr in sbuf (sline), find the closest match in otl.idx
   -- and move to the associated otl buffer line (oline)
   local line = 1
-  local otl = vim.b.otl
+  local otl = vim.b[0].otl
   if otl then
     for otl_line, idx in ipairs(otl.idx) do
       if idx <= sline then
         line = otl_line
       end
     end
-    vim.api.nvim_win_set_cursor(otl.dwin, { line, 0 })
+    vim.api.nvim_win_set_cursor(otl.owin, { line, 0 })
   end
 end
 
 --[[ MODULE ]]
 
-M.close = function()
-  -- so we can map "q" to M.close()
-  otl_close()
-end
+M.open = function(buf)
+  -- open otl window for given buf number
+  buf = buf_sanitize(buf)
 
-M.move = function(n)
-  otl_move(n)
-end
-
-M.open = function()
-  -- we have a close, so add open as well
-  otl_open()
-end
-
-M.shuttle = function()
-  local line = vim.api.nvim_win_get_cursor(0)[1]
-  local buf = vim.api.nvim_get_current_buf()
-  local otl = vim.b.otl
-
-  -- no otl available
-  if otl == nil then
+  if vim.b[buf].otl then
+    vim.notify("[error](open) otl already exists?", vim.log.levels.ERROR)
     return
   end
 
-  -- moveto otl window
+  local otl = {}
+
+  -- create new otl window with outline
+  otl.sbuf = buf
+  otl.swin = vim.api.nvim_get_current_win()
+  otl_outline(otl)
+  otl_settings(otl)
+  otl_sync(otl)
+  local line = vim.api.nvim_win_get_cursor(otl.swin)[1]
+  otl_select(line)
+end
+
+M.close = function(buf)
+  -- close otl window, move to swin
+  buf = buf_sanitize(buf)
+  if buf == nil then
+    vim.notify("[error](close) invalid buffer number", vim.log.levels.ERROR)
+    return
+  end
+
+  local otl = vim.b[buf].otl
+  if otl == nil then
+    -- nothing todo
+    return
+  end
+
+  -- wipe the otl association
+  otl_nosettings(otl)
+  vim.b[otl.sbuf].otl = nil
+  vim.b[otl.obuf].otl = nil
+
+  win_close(otl.owin)
+  win_goto(otl.swin)
+end
+
+M.shuttle = function()
+  -- move back and forth between the associated otl windows
+  local buf = vim.api.nvim_get_current_buf()
+  local otl = vim.b[buf].otl
+
+  if otl == nil then
+    -- noop since there isn't an otl available
+    return
+  end
+
+  local win = vim.api.nvim_get_current_win()
+  local line = vim.api.nvim_win_get_cursor(win)[1]
+
   if buf == otl.sbuf then
-    win_goto(otl.dwin)
+    -- shuttle in *a* window showing sbuf, adopt it as swin and moveto otl
+    otl.swin = win
+    otl_sync(otl)
+    win_goto(otl.owin)
     otl_select(line)
     return
   end
 
-  -- moveto src window
-  if not win_isvalid(otl.swin) then
-    otl.swin = vim.fn.win_findbuf(otl.sbuf)[1]
-    otl_sync(otl)
-  end
-
-  if otl.swin then
+  if win_isvalid(otl.swin) and otl.sbuf == vim.api.nvim_win_get_buf(otl.swin) then
+    -- shuttle called in the otl window and swin still shows sbuf
+    line = otl.idx[line]
     win_goto(otl.swin)
-  else
-    vim.notify("[error] shuttle: no window for src buf", vim.log.levels.ERROR)
-  end
-end
-
-M.toggle = function(buf)
-  buf = buf_sanitize(buf)
-  if not buf then
-    vim.notify("[error] toggle was given an invalid bufnr", vim.log.levels.ERROR)
+    win_centerline(otl.swin, line)
     return
   end
 
-  if vim.b[buf].otl then
-    otl_close()
+  -- shuttle called in owin and need to adopt antoher swin
+  otl.swin = vim.fn.bufwinid(otl.sbuf)
+  if otl.swin == -1 then
+    return M.close()
   else
-    otl_open()
+    line = otl.idx[line]
+    otl_sync(otl)
+    win_goto(otl.swin)
+    win_centerline(otl.swin, line)
   end
+
+  -- vim.notify("[error] shuttle: no window for src buf", vim.log.levels.ERROR)
+end
+
+M.toggle = function()
+  -- open or close otl for current buffer
+  local buf = vim.api.nvim_get_current_buf()
+  local otl = vim.b[buf].otl
+
+  if otl == nil then
+    -- toggle for buf that has no otl, so create new otl
+    return M.open(buf)
+  end
+
+  -- Note: toggle calls close, that wipes the otl's and closing the
+  -- owin itriggers BufWinLeave for owin.
+  M.close(otl.sbuf)
+end
+
+M.up = function()
+  -- <Up> in otl window
+  local buf = vim.api.nvim_get_current_buf()
+  local otl = vim.b[buf].otl
+
+  if otl == nil then
+    return
+  end
+
+  local line = vim.api.nvim_win_get_cursor(0)[1]
+  if line == 1 then
+    line = vim.api.nvim_buf_line_count(0)
+  else
+    line = line - 1
+  end
+
+  win_centerline(otl.owin, line)
+  line = otl.idx[line]
+  win_centerline(otl.swin, line)
+end
+
+M.down = function()
+  -- <Down> in otl window
+  local buf = vim.api.nvim_get_current_buf()
+  local otl = vim.b[buf].otl
+
+  if otl == nil then
+    return
+  end
+
+  local line = vim.api.nvim_win_get_cursor(0)[1]
+  if line == vim.api.nvim_buf_line_count(0) then
+    line = 1
+  else
+    line = line + 1
+  end
+
+  win_centerline(otl.owin, line)
+  line = otl.idx[line]
+  win_centerline(otl.swin, line)
 end
 
 -- TODO: not sure if this is the right way

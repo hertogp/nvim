@@ -1,3 +1,9 @@
+-- [[ LUA ]]
+-- neodev.vim
+-- https://github.com/folke/neodev.nvim
+-- setup neodev BEFORE any other lsp
+require("neodev").setup {}
+
 -- setup language servers.
 -- https://github.com/neovim/nvim-lspconfig
 -- generic keymaps
@@ -74,23 +80,6 @@ require("fidget").setup()
 -- [[elixir_ls]]
 -- https://github.com/elixir-lsp/elixir-ls
 -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#elixirls
-
--- [[ now handled by mason ]]
--- require("lspconfig").elixirls.setup {
---   cmd = { "/home/pdh/.config/lsp/elixir-ls/release/language_server.sh" },
---   on_attach = on_attach,
---   capabilities = capabilities,
--- }
-
--- [[luau_lsp]]
--- This NOT Lua but a derivative, see https://luau-lang.org/
-
--- [[ LUA ]]
--- see ~/.config/lsp/lua-language-server/
--- neodev.vim
--- https://github.com/folke/neodev.nvim
--- setup neodev BEFORE any other lsp
-require("neodev").setup {}
 
 -- [[ now handled by mason ]]
 --

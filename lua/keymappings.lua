@@ -24,7 +24,7 @@ imap("<c-n>", "<c-n><c-p>", opts) -- invoke keyword completion
 -- do not set cwd since that'll change the working directory
 nmap(
   "<space>n",
-  "<cmd>lua require'telescope.builtin'.find_files({search_dirs={'~/notes'}})<cr>",
+  "<cmd>lua require'telescope.builtin'.find_files({search_dirs={'~/notes'}, search_file='md'})<cr>",
   opts
 )
 
