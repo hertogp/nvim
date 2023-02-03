@@ -27,11 +27,22 @@ M.queries = {
   ]],
 
   lua = [[
-    ((comment) @head (#lua-match? @head "^--%[%[[^\n]+%]%]$"))
-    ((function_declaration) @head)
-    ((assignment_statement) @head)
-    ((variable_declaration) @head)
+    (((comment) @c (#lua-match? @c "^--%[%[[^\n]+%]%]$")) (#join! "head"  "" "[c] " @c))
+    ((function_declaration (identifier) @a (parameters) @b (#join! "head" "" "[f] " @a @b)))
+    ((assignment_statement
+      ((variable_list) @a) (("=") @b)
+      (expression_list (function_definition (("function") @c) ((parameters)@d))))
+      (#join! "head" "" "[f] " @a " " @b " " @c @d))
+    (((assignment_statement) @head) (#join! "head" "" "[s] " @head))
+    (((variable_declaration) @head) (#join! "head" "" "[v] " @head))
     ]],
+
+  -- lua = [[
+  --   ((comment) @head (#lua-match? @head "^--%[%[[^\n]+%]%]$"))
+  --   ((function_declaration) @head)
+  --   ((assignment_statement) @head)
+  --   ((variable_declaration) @head)
+  --   ]],
 
   markdown = [[
     (section (atx_heading) @head)
@@ -106,6 +117,46 @@ local function ts_depth(node, root)
   return depth
 end
 
+-- match:table, maps numeric capture_id's to nodes and some alpha k,v-entries
+-- pattern:string  -> the linenr in the string containing the queries
+-- bufnr:number -> source buffer number
+-- predicate:string[] = joincap! name char id1, id2, ...
+-- meta:table, maps numeric capture_id's to k,v-tables and may have alpha k,v entries
+local function joincaptures(match, _, bufnr, predicate, meta)
+  local name = predicate[2]
+  local val = nil
+  if #predicate < 4 then
+    -- (#join! name)
+    for id, node in ipairs(match) do
+      local text = vim.treesitter.query.get_node_text(node, bufnr, { concat = false })[1]
+      P { "join! 2", id, node, node:type(), text }
+    end
+  else
+    -- (#join! name char id1 id2 ..)
+    -- where idx may be a string, in which case its added as-is
+    local char = predicate[3]
+    for i = 4, #predicate do
+      local key = predicate[i]
+      local text = ""
+      -- if key is a number -> get node by number from match
+      -- if key is string -> add to value as-is
+      if type(key) == "string" then
+        text = key
+      else
+        local node = match[key]
+        text = vim.treesitter.query.get_node_text(node, bufnr, { concat = false })[1] or ""
+      end
+      val = val and (val .. char .. text) or text
+    end
+  end
+  if val then
+    meta[name] = val
+  end
+  -- return true
+end
+
+vim.treesitter.query.add_directive("join!", joincaptures, true)
+
 local function ts_outline(bufnr)
   -- return two lists: {linenrs}, {lines} based on a filetype specific TS query
   local ft = vim.bo[bufnr].filetype
@@ -123,20 +174,16 @@ local function ts_outline(bufnr)
 
   local blines = {}
   local idx = {}
-  local lines
-  for id, node, _ in query:iter_captures(root, 0, 0, -1) do
+  -- local lines
+  -- for _, node, meta in query:iter_captures(root, 0, 0, -1) do
+  for _, node, meta in query:iter_captures(root, bufnr) do
     local depth = ts_depth(node, root)
-    local capture = query.captures[id]
-
-    local linenr = node:range() -- ignore start_col, end_row, end_col
-    local prev_line = idx[#idx] or -1 -- use -1 when `idx` is still empty
-    if depth <= max_depth and capture == "head" and linenr ~= prev_line then
-      lines = vim.treesitter.query.get_node_text(node, bufnr, { concat = false })
-
-      if #lines > 0 then
-        blines[#blines + 1] = " " .. lines[1]
-        idx[#idx + 1] = linenr + 1
-      end
+    local linenr = node:range()
+    linenr = linenr + 1
+    local prev_line = idx[#idx] or -1
+    if depth <= max_depth and linenr ~= prev_line and meta.head then
+      blines[#blines + 1] = " " .. meta.head
+      idx[#idx + 1] = linenr
     end
   end
   return idx, blines
