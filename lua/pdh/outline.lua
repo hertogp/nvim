@@ -21,10 +21,17 @@ M.queries = {
   -- Treesitter queries that yield an outline for a given file type
   -- see https://github.com/elixir-lang/tree-sitter-elixir/tree/main/queries
   elixir = [[
-    ((comment) @head (#lua-match? @head "^[%s#]+%[%[[^\n]+%]%]$"))
-    (((call (identifier) @x) (#any-of? @x "defmodule" "use" "alias" "def" "defp")) @head)
-    (((unary_operator (call (identifier) @h)) @head) (#not-any-of? @h "spec" "doc" "moduledoc"))
+    (((comment) @c (#lua-match? @c "^[%s#]+%[%[[^\n]+%]%]")) (#join! "head" "" "[c] " @c))
+    ((call target: (((identifier) ((arguments) @a)) @x)(#eq? @x "def")) (#join! "head" "" "[f] " @a))
+    ((call target: (((identifier) ((arguments) @a)) @x)(#eq? @x "defp")) (#join! "head" "" "[p] " @a))
+    ((call target: (((identifier) ((arguments) @a)) @x)(#any-of? @x "defguard" "defguardp")) (#join! "head" "" "[g] " @a))
+    ((call target: (((identifier) ((arguments) @a)) @x)(#any-of? @x "defmodule" "alias")) (#join! "head" "" "[M] " @x " " @a))
+    ((((unary_operator (call (((identifier) @i)(#not-any-of? @i "doc" "spec" "typedoc" "moduledoc")))) @m))(#join! "head" "" "[@] " @m))
+    ((call target: (((identifier) ((arguments) @a)) @x)(#eq? @x "defimpl")) (#join! "head" "" "[I] " @a))
+    ((call target: (((identifier) ((arguments) @a)) @x)(#eq? @x "defstruct")) (#join! "head" "" "[S] " @a))
   ]],
+
+  -- (((unary_operator (call (identifier) @h)) @head) (#not-any-of? @h "spec" "doc" "moduledoc"))
 
   lua = [[
     (((comment) @c (#lua-match? @c "^--%[%[[^\n]+%]%]$")) (#join! "head"  "" "[c] " @c))
@@ -37,21 +44,14 @@ M.queries = {
     (((variable_declaration) @head) (#join! "head" "" "[v] " @head))
     ]],
 
-  -- lua = [[
-  --   ((comment) @head (#lua-match? @head "^--%[%[[^\n]+%]%]$"))
-  --   ((function_declaration) @head)
-  --   ((assignment_statement) @head)
-  --   ((variable_declaration) @head)
-  --   ]],
-
   markdown = [[
-    (section (atx_heading) @head)
-    (setext_heading (paragraph) @head)
+    ((section (atx_heading) @head) (#join! "head" "" @head))
+    ((setext_heading (paragraph) @head) (#join! "head" "" @head))
   ]],
 }
 
 M.depth = {
-  elixir = 2,
+  elixir = 4,
   lua = 1,
   markdown = 6,
 }
@@ -120,16 +120,18 @@ end
 -- match:table, maps numeric capture_id's to nodes and some alpha k,v-entries
 -- pattern:string  -> the linenr in the string containing the queries
 -- bufnr:number -> source buffer number
--- predicate:string[] = joincap! name char id1, id2, ...
+-- predicate:string[] = join! name char id1, id2, ...
 -- meta:table, maps numeric capture_id's to k,v-tables and may have alpha k,v entries
 local function joincaptures(match, _, bufnr, predicate, meta)
   local name = predicate[2]
   local val = nil
+
   if #predicate < 4 then
     -- (#join! name)
     for id, node in ipairs(match) do
       local text = vim.treesitter.query.get_node_text(node, bufnr, { concat = false })[1]
-      P { "join! 2", id, node, node:type(), text }
+      -- [[ TODO: ]] is this really used?
+      P { "join < 4", id, predicate, text }
     end
   else
     -- (#join! name char id1 id2 ..)
@@ -151,10 +153,12 @@ local function joincaptures(match, _, bufnr, predicate, meta)
   end
   if val then
     meta[name] = val
+    -- P { "meta[x]", name, meta }
   end
   -- return true
 end
 
+-- see function above
 vim.treesitter.query.add_directive("join!", joincaptures, true)
 
 local function ts_outline(bufnr)
