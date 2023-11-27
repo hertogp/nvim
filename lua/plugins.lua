@@ -136,7 +136,9 @@ return require("packer").startup(function(use)
   use { "wesleimp/stylua.nvim" }
 
   -- Elixir
+  -- https://github.com/elixir-editors/vim-elixir
   use "elixir-editors/vim-elixir"
+  -- https://github.com/mhinz/vim-mix-format
   use "mhinz/vim-mix-format"
 
   --[[ Terminal ]]

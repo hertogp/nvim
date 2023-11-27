@@ -23,6 +23,7 @@ o.wrap = false
 o.whichwrap = "b,s,<,>,[,]"
 o.sidescroll = 10
 o.backspace = "indent,eol,start"
+o.autoindent = true
 o.smartindent = true
 o.shiftwidth = 2
 o.tabstop = 2

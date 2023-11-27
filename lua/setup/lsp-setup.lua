@@ -33,7 +33,7 @@ local servers = {
   -- pyright = {},
   -- rust_analyzer = {},
   -- tsserver = {},
-  elixirls = {},
+  -- elixirls = {}, -- mason can't download latest version apparently
 
   sumneko_lua = {
     Lua = {
@@ -55,6 +55,7 @@ local servers = {
   },
 }
 
+-- https://github.com/williamboman/mason-lspconfig.nvim
 require("mason").setup()
 
 -- Ensure the servers above are installed
@@ -80,7 +81,17 @@ require("fidget").setup()
 -- [[elixir_ls]]
 -- https://github.com/elixir-lsp/elixir-ls
 -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#elixirls
+-- https://elixirforum.com/t/elixir-ls-fails-in-neovim/56523/7
+--
+local root_pattern = require("lspconfig").util.root_pattern
 
+require("lspconfig").elixirls.setup {
+  filetypes = { "elixir", "eelixir", "heex", "surface" },
+  root_dir = root_pattern("mix.exs", ".git") or vim.loop.os_homedir(),
+  cmd = { "/home/pdh/.config/lsp/elixir-ls/release/language_server.sh" },
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
 -- [[ now handled by mason ]]
 --
 -- https://github.com/sumneko/lua-language-server
