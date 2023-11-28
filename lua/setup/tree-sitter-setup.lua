@@ -1,7 +1,7 @@
 -- https://github.com/nvim-treesitter/nvim-treesitter
 require("nvim-treesitter.configs").setup {
   -- A list of parser names, or "all"
-  ensure_installed = { "elixir", "lua", "c", "help", "vim", "vimdoc" },
+  ensure_installed = { "elixir", "lua", "c", "help", "vim" },
   update_strategy = "do not use lockfile",
 
   -- Install parsers synchronously (only applied to `ensure_installed`)
