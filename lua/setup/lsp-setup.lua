@@ -82,7 +82,8 @@ require("fidget").setup()
 -- https://github.com/elixir-lsp/elixir-ls
 -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#elixirls
 -- https://elixirforum.com/t/elixir-ls-fails-in-neovim/56523/7
---
+-- see ~/.config/lsp/_readme.pdh.md
+-- we donot install elixir-ls via Mason
 local root_pattern = require("lspconfig").util.root_pattern
 
 require("lspconfig").elixirls.setup {
